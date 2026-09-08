@@ -1,0 +1,140 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Breadcrumb from '../../components/Breadcrumb.astro';
+
+const semuaFoto = [
+  { foto: "/images/galeri/bakti-sosial-1.jpg", kategori: "Sosial", caption: "Kegiatan bakti sosial Yasuki bersama warga sekitar" },
+  { foto: "/images/galeri/bakti-sosial-kesehatan.jpg", kategori: "Sosial", caption: "Bakti sosial bidang kesehatan untuk warga dhuafa" },
+  { foto: "/images/galeri/bencana-semeru-1.jpg", kategori: "Sosial", caption: "Bantuan kemanusiaan untuk korban bencana Semeru" },
+  { foto: "/images/galeri/bencana-semeru-2.jpg", kategori: "Sosial", caption: "Penyaluran bantuan tahap lanjutan untuk korban bencana Semeru" },
+  { foto: "/images/galeri/peduli-cianjur-1.jpg", kategori: "Sosial", caption: "Program Peduli Cianjur — bantuan kemanusiaan pascabencana" },
+  { foto: "/images/galeri/peduli-cianjur-2.jpg", kategori: "Sosial", caption: "Distribusi bantuan Peduli Cianjur kepada warga terdampak" },
+  { foto: "/images/galeri/peduli-cianjur-3.jpg", kategori: "Sosial", caption: "Tim Yasuki di lapangan program Peduli Cianjur" },
+  { foto: "/images/galeri/peduli-cianjur-4.jpg", kategori: "Sosial", caption: "Penyerahan bantuan logistik program Peduli Cianjur" },
+  { foto: "/images/galeri/peduli-cianjur-5.jpg", kategori: "Sosial", caption: "Dokumentasi kegiatan Peduli Cianjur bersama warga" },
+  { foto: "/images/galeri/peduli-cianjur-6.jpg", kategori: "Sosial", caption: "Suasana penyaluran bantuan program Peduli Cianjur" },
+  { foto: "/images/galeri/qurban-2023.jpg", kategori: "Sosial", caption: "Penyembelihan dan distribusi hewan qurban tahun 2023" },
+  { foto: "/images/galeri/qurban-2025-1.jpg", kategori: "Sosial", caption: "Kegiatan Qurban 2025 — persiapan penyembelihan" },
+  { foto: "/images/galeri/qurban-2025-2.jpg", kategori: "Sosial", caption: "Kegiatan Qurban 2025 — proses pemotongan daging" },
+  { foto: "/images/galeri/qurban-2025-3.jpg", kategori: "Sosial", caption: "Kegiatan Qurban 2025 — pengemasan daging qurban" },
+  { foto: "/images/galeri/qurban-2025-4.jpg", kategori: "Sosial", caption: "Kegiatan Qurban 2025 — distribusi ke warga dhuafa" },
+  { foto: "/images/galeri/berbagi-takjil-1.jpg", kategori: "Sosial", caption: "Pembagian takjil gratis untuk warga dan musafir" },
+  { foto: "/images/galeri/berbagi-takjil-2.jpg", kategori: "Sosial", caption: "Kegiatan berbagi takjil di bulan Ramadhan" },
+  { foto: "/images/galeri/shobarumat-1.jpg", kategori: "Sosial", caption: "Shobarumat — donasi barang layak pakai untuk umat" },
+  { foto: "/images/galeri/shobarumat-2.jpg", kategori: "Sosial", caption: "Proses sortir dan distribusi Shobarumat" },
+  { foto: "/images/galeri/wakaf-alquran-galeri.jpg", kategori: "Keagamaan", caption: "Penyerahan wakaf Al-Qur'an untuk masjid dan TPQ" },
+  { foto: "/images/galeri/anak-binaan-2.jpg", kategori: "Pendidikan", caption: "Keseharian anak binaan Yasuki" },
+  { foto: "/images/galeri/outbond-anak-binaan.jpg", kategori: "Pendidikan", caption: "Kegiatan outbond untuk anak binaan Yasuki" },
+  { foto: "/images/galeri/anak-binaan-belajar-dagang.jpg", kategori: "Pendidikan", caption: "Pelatihan kewirausahaan/belajar berdagang untuk anak binaan" },
+  { foto: "/images/galeri/anak-binaan-hari-santri.jpg", kategori: "Pendidikan", caption: "Peringatan Hari Santri bersama anak binaan" },
+  { foto: "/images/galeri/tpq-sore-1.jpg", kategori: "Pendidikan", caption: "Kegiatan TPQ sore — belajar mengaji" },
+  { foto: "/images/galeri/tpq-sore-2.jpg", kategori: "Pendidikan", caption: "Santri TPQ sore Yasuki" },
+  { foto: "/images/galeri/tpq-sore-3.jpg", kategori: "Pendidikan", caption: "Suasana belajar TPQ sore" },
+  { foto: "/images/galeri/tpq-sore-4.jpg", kategori: "Pendidikan", caption: "Kegiatan mengaji TPQ sore" },
+  { foto: "/images/galeri/tpq-sore-5.jpg", kategori: "Pendidikan", caption: "Pembinaan santri TPQ sore" },
+  { foto: "/images/galeri/tpq-sore-6.jpg", kategori: "Pendidikan", caption: "Aktivitas TPQ sore Yasuki" },
+  { foto: "/images/galeri/tpq-sore-7.jpg", kategori: "Pendidikan", caption: "Dokumentasi TPQ sore" },
+  { foto: "/images/galeri/hadrah-anak-1.jpg", kategori: "Pendidikan", caption: "Latihan hadrah anak binaan Yasuki" },
+  { foto: "/images/galeri/hadrah-anak-2.jpg", kategori: "Pendidikan", caption: "Penampilan hadrah anak binaan" },
+  { foto: "/images/galeri/hadrah-anak-3.jpg", kategori: "Pendidikan", caption: "Kegiatan seni hadrah anak-anak" },
+  { foto: "/images/galeri/hadrah-anak-4.jpg", kategori: "Pendidikan", caption: "Grup hadrah binaan Yasuki tampil" },
+  { foto: "/images/galeri/program-susu-sehat-1.jpg", kategori: "Pendidikan", caption: "Program Susu Sehat untuk tumbuh kembang anak binaan" },
+  { foto: "/images/galeri/program-susu-sehat-2.jpg", kategori: "Pendidikan", caption: "Pembagian susu sehat kepada anak binaan" },
+  { foto: "/images/galeri/olahraga-bersama.jpg", kategori: "Pendidikan", caption: "Olahraga kebugaran bersama anak binaan" },
+  { foto: "/images/galeri/istighosah-galeri.jpg", kategori: "Keagamaan", caption: "Istighosah dan doa bersama warga sekitar" },
+  { foto: "/images/galeri/ziarah-wisata-religi.jpg", kategori: "Keagamaan", caption: "Kegiatan ziarah wisata religi bersama anak binaan" },
+  { foto: "/images/galeri/bersih-masjid.jpg", kategori: "Keagamaan", caption: "Kerja bakti bersih-bersih masjid" },
+  { foto: "/images/galeri/pembangunan-masjid-galeri.jpg", kategori: "Pembangunan", caption: "Progres pembangunan Masjid Darussalam" },
+  { foto: "/images/galeri/panti-yatim.jpg", kategori: "Pembangunan", caption: "Bangunan panti asuhan yatim piatu Yasuki" },
+  { foto: "/images/galeri/kebun-thoyyibah.jpg", kategori: "Pertanian", caption: "Kebun Tanaman Thoyyibah — bagian dari program pertanian Yasuki" },
+  { foto: "/images/galeri/pengurus-yasuki.jpg", kategori: "Organisasi", caption: "Kebersamaan pengurus Yasuki" },
+  { foto: "/images/galeri/halal-bihalal.jpg", kategori: "Organisasi", caption: "Halal bihalal pengurus dan admin Yasuki" },
+  { foto: "/images/galeri/kegiatan-bersama-1.jpg", kategori: "Organisasi", caption: "Kegiatan kebersamaan Yasuki dengan anak binaan dan warga" },
+  { foto: "/images/galeri/silaturahmi-ibu-ibu.jpg", kategori: "Organisasi", caption: "Silaturahmi bersama ibu-ibu di lingkungan Yasuki" },
+  { foto: "/images/galeri/kegiatan-halaman-yayasan.jpg", kategori: "Organisasi", caption: "Anak binaan berkumpul di halaman Yayasan" },
+  { foto: "/images/galeri/buka-puasa-bersama.jpg", kategori: "Keagamaan", caption: "Buka puasa bersama anak binaan dan warga" },
+  { foto: "/images/galeri/gebyar-ramadhan.jpg", kategori: "Keagamaan", caption: "Gebyar Ramadhan — pembagian bingkisan untuk anak binaan" },
+  { foto: "/images/galeri/kegiatan-anak-binaan-berbusana.jpg", kategori: "Pendidikan", caption: "Anak binaan Yasuki dalam kegiatan bertema busana muslim" },
+  { foto: "/images/galeri/hut-yayasan.jpg", kategori: "Organisasi", caption: "Peringatan HUT ke-4 Yayasan Sosial Umi Kulsum Indonesia" },
+];
+
+const kategoriList = ["Semua", ...new Set(semuaFoto.map((f) => f.kategori))];
+---
+<Layout title="Galeri — Yasuki">
+  <section class="relative pt-24 pb-16 px-6 text-center overflow-hidden">
+    <img src="/images/galeri/qurban-2025-4.jpg" alt="Galeri Yasuki" class="absolute inset-0 w-full h-full object-cover" />
+    <div class="absolute inset-0 bg-blue-950/85"></div>
+    <Breadcrumb items={[{ label: "Beranda", href: "/" }, { label: "Galeri" }]} />
+    <div class="relative z-10 mt-6">
+      <p class="text-amber-400 font-medium text-sm uppercase tracking-wide mb-2">Dokumentasi</p>
+      <h1 class="text-3xl md:text-5xl font-bold text-white mb-4">Galeri Kegiatan</h1>
+      <p class="text-blue-100 max-w-xl mx-auto">
+        Momen-momen nyata dari lapangan — santunan, pendidikan, pembangunan, hingga aksi kemanusiaan Yasuki.
+      </p>
+    </div>
+  </section>
+
+  <section class="px-6 py-16 bg-white">
+    <div class="max-w-6xl mx-auto">
+      <div class="flex flex-wrap justify-center gap-2 mb-10" id="filter-bar">
+        {kategoriList.map((k, i) => (
+          <button
+            data-filter={k}
+            class={`filter-btn text-xs md:text-sm font-medium px-4 py-1.5 rounded-full border transition ${i === 0 ? "bg-blue-900 text-white border-blue-900" : "bg-white text-slate-600 border-slate-300 hover:border-blue-900"}`}
+          >
+            {k}
+          </button>
+        ))}
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="galeri-grid">
+        {semuaFoto.map((f) => (
+          <div class="gallery-item rounded-lg overflow-hidden shadow-sm bg-slate-50" data-kategori={f.kategori}>
+            <div class="h-32 md:h-36">
+              <img src={f.foto} alt={f.caption} class="w-full h-full object-cover" loading="lazy" />
+            </div>
+            <p class="text-slate-600 text-[11px] p-2 leading-snug">{f.caption}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Penutup -->
+  <section class="px-6 py-16 bg-gradient-to-br from-amber-400 to-amber-500 text-center">
+    <h2 class="text-xl md:text-2xl font-bold text-slate-900 mb-3">Jadi Bagian dari Momen Berikutnya</h2>
+    <p class="text-slate-800 max-w-md mx-auto mb-6">
+      Dukung kegiatan Yasuki lewat donasi — sekecil apapun, akan jadi cerita baik selanjutnya.
+    </p>
+    <a href="/donasi" class="inline-block bg-slate-900 text-white px-8 py-3 rounded-lg font-semibold hover:bg-slate-800 transition">
+      Donasi Sekarang
+    </a>
+  </section>
+</Layout>
+
+<script>
+  const buttons = document.querySelectorAll('.filter-btn');
+  const items = document.querySelectorAll('.gallery-item');
+
+  buttons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const filter = btn.getAttribute('data-filter');
+
+      buttons.forEach((b) => {
+        b.classList.remove('bg-blue-900', 'text-white', 'border-blue-900');
+        b.classList.add('bg-white', 'text-slate-600', 'border-slate-300');
+      });
+      btn.classList.add('bg-blue-900', 'text-white', 'border-blue-900');
+      btn.classList.remove('bg-white', 'text-slate-600', 'border-slate-300');
+
+      items.forEach((item) => {
+        const kategori = item.getAttribute('data-kategori');
+        if (filter === 'Semua' || kategori === filter) {
+          item.classList.remove('hidden');
+        } else {
+          item.classList.add('hidden');
+        }
+      });
+    });
+  });
+</script>

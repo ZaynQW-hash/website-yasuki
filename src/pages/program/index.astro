@@ -1,0 +1,119 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Breadcrumb from '../../components/Breadcrumb.astro';
+
+const unggulan = [
+  {
+    nama: "Pembangunan Masjid & Asrama",
+    kategori: "Infrastruktur",
+    deskripsi: "Penyediaan fasilitas ibadah yang nyaman serta hunian asrama yang layak bagi anak yatim dan dhuafa.",
+    foto: "/images/program/pembangunan-asrama.jpg",
+    href: "https://yasuki.site",
+    external: true,
+  },
+  {
+    nama: "Pertanian & Ketahanan Pangan",
+    kategori: "Pemberdayaan",
+    deskripsi: "Program kemandirian pangan melalui pengelolaan lahan pertanian produktif dan pelatihan tani bagi masyarakat.",
+    foto: "/images/program/pertanian/panen-anak-binaan.jpg",
+    href: "/program/pertanian",
+  },
+];
+
+const lainnya = [
+  { slug: "santunan-yatim-dhuafa", nama: "Santunan Yatim & Dhuafa", kategori: "Santunan", foto: "/images/program/santunan-yatim-dhuafa.jpg" },
+  { slug: "santunan-lansia", nama: "Santunan Lansia", kategori: "Santunan", foto: "/images/program/santunan-lansia.jpg" },
+  { slug: "wakaf-alquran", nama: "Wakaf Al-Qur'an", kategori: "Keagamaan", foto: "/images/program/wakaf-alquran.jpg" },
+  { slug: "istighosah", nama: "Istighosah & Doa Bersama", kategori: "Keagamaan", foto: "/images/program/istighosah.jpg" },
+  { slug: "shobarumat", nama: "Shobarumat", kategori: "Sosial", foto: "/images/program/shobarumat.jpg" },
+  { slug: "tahfidz", nama: "Tahfidzul Qur'an", kategori: "Pendidikan", foto: "/images/program/tahfidz.jpg" },
+  { slug: "bimbel-gratis", nama: "Bimbel Gratis", kategori: "Pendidikan", foto: "/images/program/bimbel-gratis.jpg" },
+];
+---
+<Layout title="Program Kami — Yasuki">
+  <section class="relative pt-24 pb-16 px-6 text-center overflow-hidden">
+    <img src="/images/program/pertanian/petani-panen.jpg" alt="Program Yasuki" class="absolute inset-0 w-full h-full object-cover" />
+    <div class="absolute inset-0 bg-blue-950/85"></div>
+    <Breadcrumb items={[{ label: "Beranda", href: "/" }, { label: "Program" }]} />
+    <div class="relative z-10 mt-6">
+      <p class="text-amber-400 font-medium text-sm uppercase tracking-wide mb-2">Program Kami</p>
+      <h1 class="text-3xl md:text-5xl font-bold text-white mb-4">9 Jalan Kebaikan Yasuki</h1>
+      <p class="text-blue-100 max-w-xl mx-auto">
+        Dari santunan harian hingga pembangunan jangka panjang — setiap program adalah ikhtiar kami untuk terus peduli tiada henti.
+      </p>
+    </div>
+  </section>
+
+  <!-- Program Unggulan -->
+  <section class="px-6 py-20 bg-white">
+    <div class="max-w-5xl mx-auto">
+      <div class="text-center mb-10">
+        <h2 class="text-2xl md:text-3xl font-bold text-blue-950 mb-2">Program Unggulan Yayasan</h2>
+        <p class="text-slate-500">Pilar utama gerakan sosial dan pemberdayaan Yasuki</p>
+      </div>
+      <div class="grid md:grid-cols-2 gap-6">
+        {unggulan.map((p) => (
+          <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm flex flex-col">
+            <div class="h-48 relative">
+              {p.foto ? (
+                <img src={p.foto} alt={p.nama} class="w-full h-full object-cover" />
+              ) : (
+                <div class="w-full h-full bg-gradient-to-br from-blue-900 to-blue-950" />
+              )}
+            </div>
+            <div class="p-5 flex flex-col flex-1">
+              <span class="inline-block bg-amber-50 text-amber-700 text-xs font-medium px-3 py-1 rounded-full mb-3 w-fit">
+                {p.kategori}
+              </span>
+              <h3 class="text-blue-950 font-semibold text-lg mb-2">{p.nama}</h3>
+              <p class="text-slate-600 text-sm mb-5 flex-1">{p.deskripsi}</p>
+              <a
+                href={p.href}
+                target={p.external ? "_blank" : undefined}
+                class="inline-block text-center bg-blue-900 text-white text-sm font-medium px-4 py-2.5 rounded-lg hover:bg-blue-800 transition"
+              >
+                Lihat Detail & Progres
+              </a>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Program Lainnya -->
+  <section class="px-6 py-20 bg-blue-50 bg-[radial-gradient(circle,rgba(30,58,138,0.12)_1px,transparent_1px)] bg-[length:22px_22px]">
+    <div class="max-w-6xl mx-auto">
+      <div class="text-center mb-10">
+        <h2 class="text-2xl md:text-3xl font-bold text-blue-950 mb-2">Program Lainnya</h2>
+        <p class="text-slate-500">Kegiatan rutin Yasuki — update terbaru dapat dilihat di halaman Berita</p>
+      </div>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {lainnya.map((p) => (
+          <div id={p.slug} class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm scroll-mt-24">
+            <div class="h-28">
+              <img src={p.foto} alt={p.nama} class="w-full h-full object-cover" />
+            </div>
+            <div class="p-3 text-center">
+              <span class="inline-block bg-amber-50 text-amber-700 text-[10px] font-medium px-2 py-0.5 rounded-full mb-1.5">
+                {p.kategori}
+              </span>
+              <h3 class="text-blue-950 font-semibold text-sm">{p.nama}</h3>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Penutup -->
+  <section class="px-6 py-16 bg-gradient-to-br from-amber-400 to-amber-500 text-center">
+    <h2 class="text-xl md:text-2xl font-bold text-slate-900 mb-3">Tertarik Mendukung Salah Satu Program?</h2>
+    <p class="text-slate-800 max-w-md mx-auto mb-6">
+      Donasi kamu, sekecil apapun, langsung berdampak pada program-program di atas.
+    </p>
+    <a href="/donasi" class="inline-block bg-slate-900 text-white px-8 py-3 rounded-lg font-semibold hover:bg-slate-800 transition">
+      Donasi Sekarang
+    </a>
+  </section>
+</Layout>

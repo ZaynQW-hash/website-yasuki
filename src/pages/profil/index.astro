@@ -1,0 +1,227 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Breadcrumb from '../../components/Breadcrumb.astro';
+
+const stats = [
+  { label: "Relawan", value: "32" },
+  { label: "Anak Binaan", value: "152" },
+  { label: "Yatim Piatu Terbantu", value: "48" },
+  { label: "Paket Donasi Disalurkan", value: "10.000+" },
+];
+---
+<Layout title="Profil Yayasan — Yasuki">
+  <section class="relative pt-24 pb-16 px-6 text-center overflow-hidden">
+    <img src="/images/program/pertanian/panen-anak-binaan.jpg" alt="Yasuki" class="absolute inset-0 w-full h-full object-cover" />
+    <div class="absolute inset-0 bg-blue-950/85"></div>
+    <Breadcrumb items={[{ label: "Beranda", href: "/" }, { label: "Profil" }]} />
+    <div class="relative z-10 mt-6">
+      <p class="text-amber-400 font-medium text-sm uppercase tracking-wide mb-2">Tentang Kami</p>
+      <h1 class="text-3xl md:text-5xl font-bold text-white mb-4">Yayasan Sosial Umi Kulsum Indonesia</h1>
+      <p class="text-blue-100 max-w-2xl mx-auto">
+        Yasuki hadir untuk terus peduli tiada henti — menyalurkan kebaikan lewat santunan, pendidikan, dan pembangunan bagi umat di Purworejo dan sekitarnya.
+      </p>
+    </div>
+  </section>
+
+  <section class="px-6 py-16 bg-white">
+    <div class="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-4">
+      {stats.map((s) => (
+        <div class="text-center bg-slate-50 border border-slate-200 rounded-xl py-6">
+          <p class="text-3xl font-bold text-amber-600">{s.value}</p>
+          <p class="text-slate-600 text-sm mt-1">{s.label}</p>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <section class="px-6 py-16 bg-blue-900">
+    <div class="max-w-3xl mx-auto">
+      <h2 class="text-2xl font-bold text-white mb-4">Visi</h2>
+      <p class="text-blue-100 leading-relaxed mb-8">
+        Menuju kehidupan masyarakat cerdas, mandiri, damai, dan sejahtera — mengarahkan warga masyarakat terhadap fungsi diri sebagai pelaku pembangunan diri dan lingkungannya, sehingga sanggup diarahkan pada peningkatan daya fikir dan disiplin dalam kehidupan bermasyarakat, berbangsa, dan bernegara yang dilandasi dengan keyakinan terhadap ajaran ilahi.
+      </p>
+      <h2 class="text-2xl font-bold text-white mb-4">Misi</h2>
+      <p class="text-blue-100 leading-relaxed mb-4">
+        Menyelenggarakan kegiatan usaha kesejahteraan sosial dan memberikan pelayanan sosial untuk kepentingan umat dan kepentingan kemanusiaan melalui pembinaan dan pemberdayaan masyarakat:
+      </p>
+      <ul class="text-blue-100 leading-relaxed space-y-2 list-disc list-inside">
+        <li>Membantu dan memfasilitasi penyelenggaraan pendidikan formal melalui jalur sekolah dari tingkat dasar sampai tingkat tinggi.</li>
+        <li>Menyelenggarakan pembinaan dan pemberdayaan masyarakat melalui pendidikan dan pengajaran agama Islam, serta pelatihan, keterampilan, dan kursus-kursus.</li>
+        <li>Menggali potensi dan sumber kesejahteraan sosial.</li>
+        <li>Memberikan pelayanan sosial untuk kepentingan umat dan kepentingan kemanusiaan.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Legalitas -->
+  <section class="px-6 py-16 bg-white">
+    <div class="max-w-3xl mx-auto">
+      <h2 class="text-2xl font-bold text-blue-950 mb-6">Legalitas Yayasan</h2>
+      <div class="grid sm:grid-cols-2 gap-4">
+        <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 text-center">
+          <p class="text-slate-500 text-xs">Akta Notaris</p>
+          <p class="text-blue-950 text-sm font-medium">Subagio Rahardjo, S.H. No. 24, 21 Januari 2021</p>
+        </div>
+        <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 text-center">
+          <p class="text-slate-500 text-xs">SK Menteri Hukum dan HAM RI</p>
+          <p class="text-blue-950 text-sm font-medium">AHU.0003050.AH.01.04. Tahun 2021</p>
+        </div>
+        <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 text-center">
+          <p class="text-slate-500 text-xs">SIOP Dinas Sosial Kab. Purworejo</p>
+          <p class="text-blue-950 text-sm font-medium">Nomor 466.3/0.81/2021</p>
+        </div>
+        <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 text-center">
+          <p class="text-slate-500 text-xs">NPWP</p>
+          <p class="text-blue-950 text-sm font-medium">41.359.605.7-531 (terdaftar 02-2021)</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Program Kegiatan Resmi -->
+  <section class="px-6 py-16 bg-blue-50 bg-[radial-gradient(circle,rgba(30,58,138,0.12)_1px,transparent_1px)] bg-[length:22px_22px]">
+    <div class="max-w-4xl mx-auto">
+      <h2 class="text-2xl font-bold text-blue-950 mb-2 text-center">Landasan Program Kegiatan</h2>
+      <p class="text-slate-500 text-center mb-10">Payung besar seluruh kegiatan Yasuki, tertuang dalam dua gerakan utama</p>
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="bg-white border border-slate-200 rounded-xl p-6">
+          <h3 class="text-blue-950 font-bold text-lg mb-3">Tebar Amal Jariyah</h3>
+          <ul class="text-slate-600 text-sm leading-relaxed space-y-2 list-disc list-inside">
+            <li>Penggalangan Zakat-Infaq-Shodaqoh-Wakaf (ZISWA) melalui Pundi Umat (P2U)</li>
+            <li>Pembebasan tanah wakaf untuk kepentingan umat dan pengembangan yayasan</li>
+            <li>Pembangunan gedung belajar, asrama, dan tempat ibadah</li>
+            <li>Bhakti Ramadhan, Bhakti Qurban, dan Bhakti Sosial Gratis (donor darah, khitanan, pengobatan gratis)</li>
+            <li>Posko bantuan kemanusiaan untuk penanggulangan bencana alam</li>
+            <li>Pembinaan usaha ekonomi kecil melalui santunan produktif</li>
+          </ul>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-xl p-6">
+          <h3 class="text-blue-950 font-bold text-lg mb-3">Tebar Ilmu dan Kasih Sayang</h3>
+          <ul class="text-slate-600 text-sm leading-relaxed space-y-2 list-disc list-inside">
+            <li>Santunan biaya pendidikan bagi peserta didik, yatim, piatu, dan dhuafa</li>
+            <li>Pelatihan keterampilan: pertanian, peternakan, tata boga, perbengkelan</li>
+            <li>Kursus bahasa, komputer, menjahit, dan mengemudi</li>
+            <li>Taman Pendidikan Al-Qur'an (TPQ) untuk anak-anak</li>
+            <li>Pendidikan Islam untuk remaja melalui forum remaja masjid</li>
+            <li>Majelis Ta'lim dan Tadarus Al-Qur'an</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="px-6 py-16 bg-white">
+    <div class="max-w-5xl mx-auto">
+      <h2 class="text-2xl font-bold text-blue-950 mb-2 text-center">Struktur Organisasi</h2>
+      <p class="text-slate-500 text-center mb-10">Susunan pengurus Yayasan Sosial Umi Kulsum Indonesia</p>
+
+      <!-- Tier 0: Pembina & Pengawas -->
+      <div class="flex flex-wrap justify-center gap-4 mb-6">
+        <div class="text-center w-40">
+          <span class="inline-block bg-blue-900 text-white text-xs font-medium px-3 py-1 rounded-full mb-2">Pembina</span>
+          <div class="bg-slate-50 border border-slate-200 rounded-lg py-3 px-2">
+            <img src="/images/struktur/zuli.jpg" alt="Zuli Istiyono" class="w-14 h-14 rounded-full object-cover mx-auto mb-2" />
+            <p class="text-blue-950 font-semibold text-sm">Zuli Istiyono</p>
+          </div>
+        </div>
+        <div class="text-center w-40">
+          <span class="inline-block bg-blue-900 text-white text-xs font-medium px-3 py-1 rounded-full mb-2">Pengawas</span>
+          <div class="bg-slate-50 border border-slate-200 rounded-lg py-3 px-2">
+            <img src="/images/struktur/juni.jpg" alt="Juni Setiyono" class="w-14 h-14 rounded-full object-cover mx-auto mb-2" />
+            <p class="text-blue-950 font-semibold text-sm">Juni Setiyono</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tier 1: Ketua, Sekretaris, Bendahara -->
+      <div class="flex flex-wrap justify-center gap-4 mb-6">
+        <div class="text-center w-40">
+          <span class="inline-block bg-amber-500 text-slate-900 text-xs font-medium px-3 py-1 rounded-full mb-2">Sekretaris</span>
+          <div class="bg-slate-50 border border-slate-200 rounded-lg py-3 px-2">
+            <img src="/images/struktur/kusnoto.jpg" alt="Kusnoto" class="w-14 h-14 rounded-full object-cover mx-auto mb-2" />
+            <p class="text-blue-950 font-semibold text-sm">Kusnoto</p>
+          </div>
+        </div>
+        <div class="text-center w-44">
+          <span class="inline-block bg-amber-500 text-slate-900 text-xs font-medium px-3 py-1 rounded-full mb-2">Ketua</span>
+          <div class="bg-blue-900 border border-blue-800 rounded-lg py-3 px-2">
+            <img src="/images/struktur/hasan.jpg" alt="Hasan Tolabi" class="w-16 h-16 rounded-full object-cover mx-auto mb-2 border-2 border-amber-400" />
+            <p class="text-white font-semibold text-sm">Hasan Tolabi</p>
+          </div>
+        </div>
+        <div class="text-center w-40">
+          <span class="inline-block bg-amber-500 text-slate-900 text-xs font-medium px-3 py-1 rounded-full mb-2">Bendahara</span>
+          <div class="bg-slate-50 border border-slate-200 rounded-lg py-3 px-2">
+            <img src="/images/struktur/imam.jpg" alt="Imam Triyono" class="w-14 h-14 rounded-full object-cover mx-auto mb-2" />
+            <p class="text-blue-950 font-semibold text-sm">Imam Triyono</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tier 2: Divisi utama -->
+      <div class="flex flex-wrap justify-center gap-4 mb-6">
+        {[
+          { div: "Div. Ekonomi", nama: "Rasimun Ali", foto: "rasimun" },
+          { div: "Div. Pendidikan", nama: "Sri Suryani", foto: "sri" },
+          { div: "Div. Humas", nama: "Sukirman", foto: "sukirman" },
+          { div: "Div. Kesejahteraan", nama: "Kriswanto", foto: "kriswanto" },
+        ].map((p) => (
+          <div class="text-center w-36">
+            <span class="inline-block bg-slate-200 text-slate-700 text-xs font-medium px-2.5 py-1 rounded-full mb-2">{p.div}</span>
+            <div class="bg-slate-50 border border-slate-200 rounded-lg py-3 px-2">
+              <img src={`/images/struktur/${p.foto}.jpg`} alt={p.nama} class="w-14 h-14 rounded-full object-cover mx-auto mb-2" />
+              <p class="text-blue-950 font-semibold text-sm">{p.nama}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <!-- Tier 3: Divisi lanjutan -->
+      <div class="flex flex-wrap justify-center gap-4">
+        {[
+          { div: "Div. Pers & Hukum", nama: "Achyar Ardeanto", foto: "achyar" },
+          { div: "Div. Kesehatan", nama: "Suwarti", foto: "suwarti" },
+          { div: "Div. Pembangunan & Logistik", nama: "Mujadid Ibrom R.", foto: "mujadid" },
+          { div: "Div. Peranan Wanita", nama: "Kurniasih", foto: "kurniasih" },
+        ].map((p) => (
+          <div class="text-center w-36">
+            <span class="inline-block bg-slate-200 text-slate-700 text-xs font-medium px-2.5 py-1 rounded-full mb-2">{p.div}</span>
+            <div class="bg-slate-50 border border-slate-200 rounded-lg py-3 px-2">
+              <img src={`/images/struktur/${p.foto}.jpg`} alt={p.nama} class="w-14 h-14 rounded-full object-cover mx-auto mb-2" />
+              <p class="text-blue-950 font-semibold text-sm">{p.nama}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Kebersamaan Pengurus -->
+  <section class="px-6 py-16 bg-blue-50 bg-[radial-gradient(circle,rgba(30,58,138,0.12)_1px,transparent_1px)] bg-[length:22px_22px]">
+    <div class="max-w-4xl mx-auto text-center">
+      <h2 class="text-2xl font-bold text-blue-950 mb-3">Kebersamaan Pengurus</h2>
+      <p class="text-slate-600 max-w-2xl mx-auto mb-8 leading-relaxed">
+        Di balik setiap program Yasuki, ada kekompakan pengurus yang terus terjaga — lewat rapat rutin, silaturahmi, hingga momen kebersamaan seperti halal bihalal setiap tahunnya.
+      </p>
+      <div class="grid sm:grid-cols-2 gap-4">
+        <div class="rounded-xl overflow-hidden h-56">
+          <img src="/images/galeri/pengurus-yasuki.jpg" alt="Kebersamaan pengurus Yasuki" class="w-full h-full object-cover" />
+        </div>
+        <div class="rounded-xl overflow-hidden h-56">
+          <img src="/images/galeri/halal-bihalal.jpg" alt="Halal bihalal pengurus dan admin Yasuki" class="w-full h-full object-cover" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Penutup -->
+  <section class="px-6 py-16 bg-gradient-to-br from-amber-400 to-amber-500 text-center">
+    <h2 class="text-xl md:text-2xl font-bold text-slate-900 mb-3">Kenal Lebih Dekat, Yuk Ikut Berkontribusi</h2>
+    <p class="text-slate-800 max-w-md mx-auto mb-6">
+      Bersama Yasuki, salurkan kebaikan lewat donasi yang amanah dan transparan.
+    </p>
+    <a href="/donasi" class="inline-block bg-slate-900 text-white px-8 py-3 rounded-lg font-semibold hover:bg-slate-800 transition">
+      Donasi Sekarang
+    </a>
+  </section>
+</Layout>

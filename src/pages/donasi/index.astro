@@ -1,0 +1,126 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Breadcrumb from '../../components/Breadcrumb.astro';
+
+const programCards = [
+  {
+    nama: "Pembangunan Masjid & Asrama",
+    kategori: "Infrastruktur",
+    headline: "Bantu Selesaikan Pembangunan Masjid Darussalam",
+    foto: "/images/program/pembangunan-asrama.jpg",
+    href: "https://yasuki.site",
+    external: true,
+    terkumpul: "Rp73.587.000",
+    target: 270000000,
+    persen: 27,
+  },
+  {
+    nama: "Pertanian & Ketahanan Pangan",
+    kategori: "Pemberdayaan",
+    headline: "Dukung Kemandirian Pangan Yasuki",
+    foto: "/images/program/pertanian/panen-anak-binaan.jpg",
+    href: "/program/pertanian",
+  },
+  { nama: "Santunan Yatim & Dhuafa", kategori: "Santunan", headline: "Santuni Anak Yatim & Dhuafa Setiap Bulan", foto: "/images/program/santunan-yatim-dhuafa.jpg", href: "/program#santunan-yatim-dhuafa" },
+  { nama: "Santunan Lansia", kategori: "Santunan", headline: "Perhatian dan Kasih untuk Lansia Dhuafa", foto: "/images/program/santunan-lansia.jpg", href: "/program#santunan-lansia" },
+  { nama: "Wakaf Al-Qur'an", kategori: "Keagamaan", headline: "Wakafkan Al-Qur'an untuk Masjid & TPQ", foto: "/images/program/wakaf-alquran.jpg", href: "/program#wakaf-alquran" },
+  { nama: "Istighosah & Doa Bersama", kategori: "Keagamaan", headline: "Rangkul Warga Lewat Doa Bersama", foto: "/images/program/istighosah.jpg", href: "/program#istighosah" },
+  { nama: "Shobarumat", kategori: "Sosial", headline: "Sedekah Barang Layak Pakai untuk Umat", foto: "/images/program/shobarumat.jpg", href: "/program#shobarumat" },
+  { nama: "Tahfidzul Qur'an", kategori: "Pendidikan", headline: "Cetak Generasi Penghafal Al-Qur'an", foto: "/images/program/tahfidz.jpg", href: "/program#tahfidz" },
+  { nama: "Bimbel Gratis", kategori: "Pendidikan", headline: "Buka Akses Belajar untuk Anak Dhuafa", foto: "/images/program/bimbel-gratis.jpg", href: "/program#bimbel-gratis" },
+];
+---
+<Layout title="Donasi — Yasuki">
+  <section class="relative pt-24 pb-16 px-6 text-center overflow-hidden">
+    <img src="/images/program/santunan-lansia.jpg" alt="Donasi Yasuki" class="absolute inset-0 w-full h-full object-cover" />
+    <div class="absolute inset-0 bg-blue-950/85"></div>
+    <Breadcrumb items={[{ label: "Beranda", href: "/" }, { label: "Donasi" }]} />
+    <div class="relative z-10 mt-6">
+      <p class="text-amber-400 font-medium text-sm uppercase tracking-wide mb-2">Berbagi Kebaikan</p>
+      <h1 class="text-3xl md:text-5xl font-bold text-white mb-4">Donasi Sekarang</h1>
+      <p class="text-blue-100 max-w-xl mx-auto">
+        Setiap donasi, besar maupun kecil, membawa manfaat nyata bagi yang membutuhkan.
+      </p>
+    </div>
+  </section>
+
+  <section id="form" class="px-6 py-16 bg-white scroll-mt-20">
+    <div class="max-w-md mx-auto">
+      <div class="flex items-center justify-center gap-2 mb-6 text-xs text-slate-500">
+        <span class="bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full font-medium">✓ Terdaftar resmi Kemenkumham RI</span>
+        <span class="bg-amber-50 text-amber-700 px-3 py-1 rounded-full font-medium">10.000+ paket disalurkan</span>
+      </div>
+
+      <div class="bg-slate-50 border border-slate-200 rounded-xl p-6">
+        <p class="text-slate-500 text-sm mb-4">
+          Form donasi masih dalam tahap pengembangan (belum tersambung ke database). Tampilan di bawah ini baru rancangan visualnya.
+        </p>
+        <form class="flex flex-col gap-4">
+          <div>
+            <label class="text-slate-700 text-sm mb-1 block">Nama</label>
+            <input type="text" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-blue-950" placeholder="Nama lengkap" disabled />
+          </div>
+          <div>
+            <label class="text-slate-700 text-sm mb-1 block">Nomor WhatsApp</label>
+            <input type="text" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-blue-950" placeholder="08xx-xxxx-xxxx" disabled />
+          </div>
+          <div>
+            <label class="text-slate-700 text-sm mb-1 block">Program</label>
+            <select class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-blue-950" disabled>
+              {programCards.map((p) => <option>{p.nama}</option>)}
+              <option>Donasi Umum (tidak terikat program)</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-slate-700 text-sm mb-1 block">Nominal</label>
+            <input type="text" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-blue-950" placeholder="Rp" disabled />
+          </div>
+          <button type="button" class="bg-amber-400 text-slate-900 font-semibold py-3 rounded-lg opacity-60 cursor-not-allowed">
+            Kirim (belum aktif)
+          </button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- Kartu Program Donasi -->
+  <section class="px-6 py-16 bg-blue-50 bg-[radial-gradient(circle,rgba(30,58,138,0.12)_1px,transparent_1px)] bg-[length:22px_22px]">
+    <div class="max-w-6xl mx-auto">
+      <div class="text-center mb-10">
+        <h2 class="text-2xl md:text-3xl font-bold text-blue-950 mb-2">Pilih Program yang Ingin Didukung</h2>
+        <p class="text-slate-500">Klik salah satu untuk lihat detail dan progres terkininya</p>
+      </div>
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+        {programCards.map((p) => (
+          <a
+            href={p.href}
+            target={p.external ? "_blank" : undefined}
+            class="group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition flex flex-col"
+          >
+            <div class="relative h-32">
+              <img src={p.foto} alt={p.nama} class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+              <div class="absolute inset-0 bg-gradient-to-t from-blue-950/90 via-blue-950/20 to-transparent" />
+              <p class="absolute bottom-2 left-2 right-2 text-white text-xs font-bold leading-tight">{p.headline}</p>
+            </div>
+            <div class="p-3 flex flex-col flex-1">
+              <span class="inline-block bg-amber-50 text-amber-700 text-[10px] font-medium px-2 py-0.5 rounded-full mb-2 w-fit">
+                {p.kategori}
+              </span>
+              <p class="text-blue-950 text-sm font-semibold leading-snug mb-2 flex-1">{p.nama}</p>
+              {p.terkumpul ? (
+                <div>
+                  <div class="w-full bg-slate-200 rounded-full h-1.5 mb-1.5">
+                    <div class="bg-amber-400 h-1.5 rounded-full" style={`width: ${p.persen}%`}></div>
+                  </div>
+                  <p class="text-slate-700 text-[11px]">Terkumpul <span class="font-semibold">{p.terkumpul}</span></p>
+                </div>
+              ) : (
+                <p class="text-amber-600 text-[11px] font-medium">Lihat Program →</p>
+              )}
+            </div>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+</Layout>

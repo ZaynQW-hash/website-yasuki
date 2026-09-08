@@ -1,0 +1,120 @@
+---
+import '../styles/global.css';
+const {
+  title = "Yasuki — Yayasan Sosial Umi Kulsum Indonesia",
+  description = "Yayasan Sosial Umi Kulsum Indonesia (Yasuki) — berbagi kebaikan lewat santunan, pendidikan, dan pembangunan untuk umat di Purworejo. Peduli Tiada Henti.",
+} = Astro.props;
+
+const path = Astro.url.pathname;
+const navItems = [
+  { href: "/", label: "Beranda" },
+  { href: "/program", label: "Program" },
+  { href: "/berita", label: "Berita" },
+  { href: "/profil", label: "Profil" },
+  { href: "/kontak", label: "Kontak" },
+];
+const isActive = (href: string) =>
+  href === "/" ? path === "/" : path.startsWith(href);
+---
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content="/images/logo.png" />
+    <meta property="og:type" content="website" />
+  </head>
+  <body class="bg-blue-900">
+    <header class="fixed top-0 w-full z-50 bg-blue-900/95 backdrop-blur border-b border-blue-800">
+      <nav class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+        <a href="/" class="flex items-center gap-2">
+          <img src="/images/logo.png" alt="Logo Yasuki" class="h-9 w-9 object-contain" />
+          <span class="text-white font-bold text-xl">Yasuki</span>
+        </a>
+        <div class="hidden md:flex gap-8 text-sm font-medium">
+          {navItems.map((item) => (
+            <a
+              href={item.href}
+              class={`transition ${isActive(item.href) ? "text-amber-400" : "text-blue-100 hover:text-amber-400"}`}
+            >
+              {item.label}
+            </a>
+          ))}
+        </div>
+        <button id="menu-toggle" aria-label="Buka menu" class="md:hidden text-white p-2">
+          <svg id="icon-open" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+          <svg id="icon-close" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </nav>
+      <div id="mobile-menu" class="hidden md:hidden flex-col gap-1 px-6 pb-4 text-sm font-medium">
+        {navItems.map((item) => (
+          <a
+            href={item.href}
+            class={`block py-2 transition ${isActive(item.href) ? "text-amber-400" : "text-blue-100 hover:text-amber-400"}`}
+          >
+            {item.label}
+          </a>
+        ))}
+      </div>
+    </header>
+
+    <slot />
+
+    <footer class="bg-blue-950 text-blue-200 px-6 py-12">
+      <div class="max-w-6xl mx-auto grid md:grid-cols-3 gap-8">
+        <div>
+          <div class="flex items-center gap-2 mb-2">
+            <img src="/images/logo.png" alt="Logo Yasuki" class="h-8 w-8 object-contain" />
+            <p class="text-white font-bold text-lg">Yasuki</p>
+          </div>
+          <p class="text-sm">Yayasan Sosial Umi Kulsum Indonesia — Peduli Tiada Henti.</p>
+        </div>
+        <div>
+          <p class="text-white font-semibold mb-2">Kontak</p>
+          <p class="text-sm">Dusun Bedug, Bagelen, Purworejo, Jawa Tengah</p>
+          <p class="text-sm">WhatsApp: 0831-9737-4241</p>
+        </div>
+        <div>
+          <p class="text-white font-semibold mb-2">Tautan</p>
+          <div class="flex flex-col gap-1 text-sm">
+            <a href="/program" class="hover:text-amber-400 transition">Program</a>
+            <a href="/galeri" class="hover:text-amber-400 transition">Galeri</a>
+            <a href="/donasi" class="hover:text-amber-400 transition">Donasi</a>
+            <a href="/kontak" class="hover:text-amber-400 transition">Kontak</a>
+          </div>
+        </div>
+      </div>
+      <p class="text-center text-xs text-blue-400 mt-8">© 2026 Yayasan Sosial Umi Kulsum Indonesia (Yasuki)</p>
+    </footer>
+
+    <script>
+      const toggle = document.getElementById('menu-toggle');
+      const menu = document.getElementById('mobile-menu');
+      const iconOpen = document.getElementById('icon-open');
+      const iconClose = document.getElementById('icon-close');
+
+      toggle?.addEventListener('click', () => {
+        const isHidden = menu?.classList.contains('hidden');
+        if (isHidden) {
+          menu?.classList.remove('hidden');
+          menu?.classList.add('flex');
+          iconOpen?.classList.add('hidden');
+          iconClose?.classList.remove('hidden');
+        } else {
+          menu?.classList.add('hidden');
+          menu?.classList.remove('flex');
+          iconOpen?.classList.remove('hidden');
+          iconClose?.classList.add('hidden');
+        }
+      });
+    </script>
+  </body>
+</html>

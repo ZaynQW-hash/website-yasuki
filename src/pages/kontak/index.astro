@@ -1,0 +1,133 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Breadcrumb from '../../components/Breadcrumb.astro';
+
+const lokasi = [
+  {
+    nama: "Kantor Pusat",
+    alamat: "Jl. Kyai Sobo, RT.01/RW.03, Seringin, Lugosobo, Kec. Gebang, Kabupaten Purworejo, Jawa Tengah 54191",
+    maps: "https://maps.app.goo.gl/PRMDATc1fLHdZAep8",
+  },
+  {
+    nama: "Kantor Perwakilan Loano",
+    alamat: "Jl. Magelang No. RT.03/RW.04, Loano Kulon, Loano, Kec. Loano, Kabupaten Purworejo, Jawa Tengah 54181",
+    maps: "https://maps.app.goo.gl/HAgTxjgMVtkY88N6A",
+  },
+  {
+    nama: "Kompleks Yayasan & Masjid Darussalam",
+    alamat: "Dusun Bedug, Kec. Bagelen, Kabupaten Purworejo, Jawa Tengah",
+    maps: "https://maps.app.goo.gl/BH2bLuYC2NEqiC9z7",
+  },
+];
+
+const socials = [
+  { label: "Instagram", value: "@yasuki_official", url: "https://www.instagram.com/yasuki_official", color: "from-pink-500 to-amber-400" },
+  { label: "TikTok", value: "@Yasumikulsum", url: "https://www.tiktok.com/@Yasumikulsum", color: "from-slate-900 to-slate-700" },
+  { label: "YouTube", value: "@yasuki.official", url: "https://www.youtube.com/@yasuki.official", color: "from-red-600 to-red-500" },
+  { label: "Facebook", value: "Yayasan Sosial Umi Kulsum Indonesia", url: "https://www.facebook.com/search/top?q=Yayasan%20Sosial%20Umi%20Kulsum%20Indonesia", color: "from-blue-600 to-blue-500" },
+];
+---
+<Layout title="Kontak — Yasuki">
+  <section class="relative pt-24 pb-16 px-6 text-center overflow-hidden">
+    <img src="/images/hero/hero-1.jpg" alt="Kegiatan Yasuki" class="absolute inset-0 w-full h-full object-cover" />
+    <div class="absolute inset-0 bg-blue-950/85"></div>
+    <Breadcrumb items={[{ label: "Beranda", href: "/" }, { label: "Kontak" }]} />
+    <div class="relative z-10 mt-6">
+      <p class="text-amber-400 font-medium text-sm uppercase tracking-wide mb-2">Hubungi Kami</p>
+      <h1 class="text-3xl md:text-5xl font-bold text-white mb-4">Kontak & Alamat</h1>
+      <p class="text-blue-100 max-w-xl mx-auto">
+        Ada pertanyaan seputar program atau donasi? Hubungi kami langsung.
+      </p>
+    </div>
+  </section>
+
+  <!-- Kontak Langsung -->
+  <section class="px-6 py-16 bg-white">
+    <div class="max-w-4xl mx-auto">
+      <h2 class="text-2xl font-bold text-blue-950 mb-2 text-center">Ngobrol Langsung dengan Kami</h2>
+      <p class="text-slate-500 text-center mb-8">Pilih cara paling nyaman — chat WhatsApp biasanya paling cepat direspons</p>
+
+      <div class="grid sm:grid-cols-2 gap-4 mb-6">
+        <a href="https://wa.me/6283197374241" target="_blank" class="group flex items-center gap-4 bg-emerald-50 border border-emerald-200 rounded-xl p-5 hover:bg-emerald-100 transition">
+          <div class="w-11 h-11 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold text-lg flex-shrink-0">HT</div>
+          <div>
+            <p class="text-blue-950 font-semibold text-sm">Hasan Tolabi</p>
+            <p class="text-slate-500 text-xs">Ketua Yasuki · +62 831-9737-4241</p>
+          </div>
+        </a>
+        <a href="https://wa.me/6281393060795" target="_blank" class="group flex items-center gap-4 bg-emerald-50 border border-emerald-200 rounded-xl p-5 hover:bg-emerald-100 transition">
+          <div class="w-11 h-11 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold text-lg flex-shrink-0">M</div>
+          <div>
+            <p class="text-blue-950 font-semibold text-sm">Mba Meydian</p>
+            <p class="text-slate-500 text-xs">Kantor Pusat · +62 813-9306-0795</p>
+          </div>
+        </a>
+      </div>
+
+      <div class="grid sm:grid-cols-2 gap-4 mb-6">
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 text-center">
+          <p class="text-slate-500 text-xs mb-1">Telepon Kantor</p>
+          <p class="text-blue-950 font-medium text-sm">(0275) 2973909</p>
+        </div>
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 text-center">
+          <p class="text-slate-500 text-xs mb-1">Email</p>
+          <p class="text-blue-950 font-medium text-sm">yasumikulsumindonesia@gmail.com</p>
+        </div>
+      </div>
+
+      <p class="text-slate-500 text-sm text-center mb-4">Atau ikuti keseharian kami di media sosial</p>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {socials.map((s) => (
+          <a
+            href={s.url}
+            target="_blank"
+            class={`group flex flex-col items-center text-center gap-2 bg-gradient-to-br ${s.color} rounded-xl p-5 hover:opacity-90 transition`}
+          >
+            <span class="text-white text-2xl">
+              {s.label === "Instagram" && "📷"}
+              {s.label === "TikTok" && "🎵"}
+              {s.label === "YouTube" && "▶️"}
+              {s.label === "Facebook" && "👍"}
+            </span>
+            <p class="text-white text-sm font-semibold">{s.label}</p>
+            <p class="text-white/80 text-xs">{s.value}</p>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Alamat & Lokasi -->
+  <section class="px-6 py-16 bg-blue-50 bg-[radial-gradient(circle,rgba(30,58,138,0.12)_1px,transparent_1px)] bg-[length:22px_22px]">
+    <div class="max-w-5xl mx-auto">
+      <h2 class="text-2xl font-bold text-blue-950 mb-2 text-center">Alamat & Lokasi</h2>
+      <p class="text-slate-500 text-center mb-10">Tiga titik lokasi kegiatan Yasuki di Purworejo</p>
+
+      <div class="grid md:grid-cols-3 gap-6">
+        {lokasi.map((l) => (
+          <div class="bg-white border border-slate-200 rounded-xl overflow-hidden flex flex-col">
+            <div class="h-40">
+              <iframe
+                src={`https://www.google.com/maps?q=${encodeURIComponent(l.alamat)}&output=embed`}
+                class="w-full h-full border-0"
+                loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade"
+              ></iframe>
+            </div>
+            <div class="p-5 flex flex-col flex-1">
+              <p class="text-amber-600 text-sm font-medium mb-2">{l.nama}</p>
+              <p class="text-slate-600 text-xs mb-4 flex-1">{l.alamat}</p>
+              <a
+                href={l.maps}
+                target="_blank"
+                class="inline-block text-center bg-blue-900 text-white text-sm font-medium px-4 py-2.5 rounded-lg hover:bg-blue-800 transition"
+              >
+                Buka di Google Maps
+              </a>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+</Layout>

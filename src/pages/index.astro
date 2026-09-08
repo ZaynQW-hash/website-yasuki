@@ -1,0 +1,226 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const programTeaser = [
+  { nama: "Santunan Yatim & Dhuafa", foto: "/images/program/santunan-yatim-dhuafa.jpg" },
+  { nama: "Pembangunan Masjid & Asrama", foto: "/images/program/pembangunan-asrama.jpg" },
+  { nama: "Santunan Lansia", foto: "/images/program/santunan-lansia.jpg" },
+  { nama: "Wakaf Al-Qur'an", foto: "/images/program/wakaf-alquran.jpg" },
+  { nama: "Tahfidzul Qur'an", foto: "/images/program/tahfidz.jpg" },
+  { nama: "Bimbel Gratis", foto: "/images/program/bimbel-gratis.jpg" },
+];
+
+const stats = [
+  { label: "Relawan", value: "32" },
+  { label: "Anak Binaan", value: "152" },
+  { label: "Yatim Piatu Terbantu", value: "48" },
+  { label: "Paket Donasi Disalurkan", value: "10.000+" },
+];
+
+const beritaDummy = [
+  {
+    judul: "Santunan Lansia Rutin Digelar, Puluhan Warga Lanjut Usia Terima Bantuan",
+    tanggal: "28 Agustus 2026",
+    kategori: "Santunan",
+    foto: "/images/program/santunan-lansia.jpg",
+  },
+  {
+    judul: "Yasuki Gelar Istighosah dan Doa Bersama Warga Sekitar",
+    tanggal: "24 Agustus 2026",
+    kategori: "Keagamaan",
+    foto: "/images/program/istighosah.jpg",
+  },
+  {
+    judul: "Kelas Bimbel Gratis Kembali Dibuka untuk Anak-Anak Binaan",
+    tanggal: "20 Agustus 2026",
+    kategori: "Pendidikan",
+    foto: "/images/program/bimbel-gratis.jpg",
+  },
+];
+---
+<Layout>
+  <section class="relative min-h-screen flex items-center px-6 pt-20 overflow-hidden">
+    <div class="absolute inset-0">
+      <img src="/images/hero/hero-1.jpg" alt="Kegiatan Yasuki" data-hero-slide class="absolute inset-0 w-full h-full object-cover opacity-100 transition-opacity duration-[1500ms]" />
+      <img src="/images/hero/hero-2.jpg" alt="Kegiatan Yasuki" data-hero-slide class="absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-[1500ms]" />
+      <img src="/images/hero/hero-3.jpg" alt="Kegiatan Yasuki" data-hero-slide class="absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-[1500ms]" />
+      <img src="/images/hero/hero-4.jpg" alt="Kegiatan Yasuki" data-hero-slide class="absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-[1500ms]" />
+    </div>
+    <!-- Overlay mobile: rata, lebih pekat agar teks tetap terbaca di layar sempit -->
+    <div class="absolute inset-0 bg-blue-950/80 md:hidden"></div>
+    <!-- Overlay desktop: gradient horizontal, foto makin jelas ke kanan -->
+    <div class="absolute inset-0 bg-gradient-to-r from-blue-950/95 via-blue-950/70 to-transparent hidden md:block"></div>
+    <div class="absolute inset-0 bg-gradient-to-t from-blue-950/50 via-transparent to-transparent"></div>
+
+    <div class="relative z-10 max-w-6xl mx-auto w-full">
+      <div class="max-w-lg text-left">
+        <span class="inline-block bg-amber-400/10 border border-amber-400/40 text-amber-300 text-xs font-medium px-4 py-1.5 rounded-full mb-4">
+          Yayasan Resmi • Purworejo, Jawa Tengah
+        </span>
+        <h1 class="text-4xl md:text-6xl font-bold text-white mb-2">Yasuki</h1>
+        <p class="text-amber-400 font-medium text-lg mb-6">Peduli Tiada Henti</p>
+        <p class="text-lg md:text-xl text-blue-100 max-w-md mb-8">
+          Yayasan Sosial Umi Kulsum Indonesia — berbagi kebaikan lewat santunan, pendidikan, dan pembangunan untuk umat.
+        </p>
+        <div class="flex gap-4 justify-start">
+          <a href="/donasi" class="bg-amber-400 text-slate-900 px-6 py-3 rounded-lg font-semibold hover:bg-amber-300 transition">
+            Donasi Sekarang
+          </a>
+          <a href="/program" class="border border-blue-200 text-white px-6 py-3 rounded-lg font-medium hover:bg-white/10 transition">
+            Lihat Program
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Kenapa Kami Ada -->
+  <section class="px-6 py-20 bg-blue-50 bg-[radial-gradient(circle,rgba(30,58,138,0.12)_1px,transparent_1px)] bg-[length:22px_22px]">
+    <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-10 items-center">
+      <div>
+        <p class="text-amber-600 text-xs font-medium uppercase tracking-wide mb-2">*Teks sementara, akan diganti draft asli</p>
+        <p class="text-amber-600 text-sm font-medium uppercase tracking-wide mb-2">Kenapa Kami Ada</p>
+        <h2 class="text-2xl md:text-4xl font-bold text-blue-950 mb-4">Kebaikan yang Tumbuh dari Kepedulian Warga</h2>
+        <p class="text-slate-600 leading-relaxed mb-4">
+          Yasuki berawal dari kepedulian sederhana terhadap anak yatim dan dhuafa di sekitar Purworejo. Dari santunan kecil yang rutin dijalankan, kini Yasuki telah menaungi sembilan program yang menjangkau ratusan anak binaan, lansia, dan keluarga yang membutuhkan.
+        </p>
+        <p class="text-slate-600 leading-relaxed">
+          Setiap donasi yang masuk kami salurkan secara transparan — karena bagi kami, kepercayaan donatur adalah amanah yang harus dijaga sepenuh hati.
+        </p>
+      </div>
+      <div class="relative h-64 md:h-80 rounded-xl overflow-hidden">
+        <img src="/images/hero/hero-2.jpg" alt="Kegiatan Yasuki" class="w-full h-full object-cover" />
+      </div>
+    </div>
+  </section>
+
+  <!-- Bagaimana Kami Bekerja -->
+  <section class="px-6 py-20 bg-white">
+    <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-10 items-center">
+      <div class="relative h-64 md:h-80 rounded-xl overflow-hidden order-2 md:order-1">
+        <img src="/images/hero/hero-3.jpg" alt="Kegiatan Yasuki" class="w-full h-full object-cover" />
+      </div>
+      <div class="order-1 md:order-2">
+        <p class="text-amber-600 text-xs font-medium uppercase tracking-wide mb-2">*Teks sementara, akan diganti draft asli</p>
+        <p class="text-amber-600 text-sm font-medium uppercase tracking-wide mb-2">Cara Kami Bekerja</p>
+        <h2 class="text-2xl md:text-4xl font-bold text-blue-950 mb-4">Setiap Donasi, Kami Pertanggungjawabkan</h2>
+        <p class="text-slate-600 leading-relaxed mb-4">
+          Tim relawan Yasuki turun langsung ke lapangan untuk memastikan setiap bantuan sampai ke tangan yang tepat. Kami bekerja sama dengan tokoh masyarakat setempat untuk memverifikasi penerima manfaat sebelum penyaluran dilakukan.
+        </p>
+        <p class="text-slate-600 leading-relaxed">
+          Laporan penyaluran donasi kami dokumentasikan dan dapat diakses oleh donatur yang ingin mengetahui ke mana kontribusinya disalurkan.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Dampak untuk Komunitas -->
+  <section class="px-6 py-20 bg-blue-50 bg-[radial-gradient(circle,rgba(30,58,138,0.12)_1px,transparent_1px)] bg-[length:22px_22px]">
+    <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-10 items-center">
+      <div>
+        <p class="text-amber-600 text-xs font-medium uppercase tracking-wide mb-2">*Teks sementara, akan diganti draft asli</p>
+        <p class="text-amber-600 text-sm font-medium uppercase tracking-wide mb-2">Dampak untuk Komunitas</p>
+        <h2 class="text-2xl md:text-4xl font-bold text-blue-950 mb-4">Dari yang Sedikit, Menjadi Berarti</h2>
+        <p class="text-slate-600 leading-relaxed mb-4">
+          Kami percaya kebaikan kecil yang dilakukan bersama-sama bisa membawa perubahan besar. Berkat dukungan donatur dan relawan, ratusan anak binaan kini punya akses pendidikan, dan puluhan lansia mendapat perhatian yang layak setiap bulannya.
+        </p>
+        <p class="text-slate-600 leading-relaxed">
+          Ke depan, Yasuki terus berupaya memperluas jangkauan program — termasuk lewat inisiatif ketahanan pangan yang baru kami mulai — agar semakin banyak warga yang terbantu.
+        </p>
+      </div>
+      <div class="relative h-64 md:h-80 rounded-xl overflow-hidden">
+        <img src="/images/hero/hero-4.jpg" alt="Kegiatan Yasuki" class="w-full h-full object-cover" />
+      </div>
+    </div>
+  </section>
+
+  <!-- Ringkasan Program -->
+  <section class="px-6 py-20 bg-white">
+    <div class="max-w-6xl mx-auto">
+      <div class="text-center mb-10">
+        <p class="text-amber-600 text-sm font-medium uppercase tracking-wide mb-2">Program Kami</p>
+        <h2 class="text-2xl md:text-4xl font-bold text-blue-950">9 Jalan Kebaikan Yasuki</h2>
+      </div>
+      <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+        {programTeaser.map((p) => (
+          <div class="relative rounded-lg overflow-hidden h-40 group">
+            <img src={p.foto} alt={p.nama} class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+            <div class="absolute inset-0 bg-gradient-to-t from-blue-950 via-blue-950/40 to-transparent" />
+            <p class="absolute bottom-2 left-2 right-2 text-white text-xs md:text-sm font-medium">{p.nama}</p>
+          </div>
+        ))}
+      </div>
+      <div class="text-center mt-8">
+        <a href="/program" class="text-amber-600 font-medium hover:text-amber-700 transition">
+          Lihat semua program →
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Statistik -->
+  <section class="px-6 py-16 bg-blue-900">
+    <div class="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-4">
+      {stats.map((s) => (
+        <div class="text-center">
+          <p class="text-3xl md:text-4xl font-bold text-amber-400">{s.value}</p>
+          <p class="text-blue-200 text-sm mt-1">{s.label}</p>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <!-- CTA Donasi -->
+  <section class="px-6 py-20 bg-gradient-to-br from-amber-400 to-amber-500 text-center">
+    <h2 class="text-2xl md:text-3xl font-bold text-slate-900 mb-3">Yuk, Ikut Berkontribusi</h2>
+    <p class="text-slate-800 max-w-lg mx-auto mb-6">
+      Setiap donasi, besar maupun kecil, membawa manfaat nyata bagi yang membutuhkan.
+    </p>
+    <a href="/donasi" class="inline-block bg-blue-900 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-800 transition">
+      Donasi Sekarang
+    </a>
+  </section>
+
+  <!-- Berita Terkini -->
+  <section class="px-6 py-20 bg-white">
+    <div class="max-w-6xl mx-auto">
+      <div class="text-center mb-10">
+        <p class="text-amber-600 text-sm font-medium uppercase tracking-wide mb-2">Kabar Yasuki</p>
+        <h2 class="text-2xl md:text-4xl font-bold text-blue-950">Berita Terkini</h2>
+      </div>
+      <div class="grid md:grid-cols-3 gap-6">
+        {beritaDummy.map((b) => (
+          <a href="/berita" class="group bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm flex flex-col">
+            <div class="h-40 overflow-hidden">
+              <img src={b.foto} alt={b.judul} class="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+            </div>
+            <div class="p-4 flex flex-col flex-1">
+              <span class="inline-block bg-amber-50 text-amber-700 text-[10px] font-medium px-2.5 py-0.5 rounded-full mb-2 w-fit">
+                {b.kategori}
+              </span>
+              <h3 class="text-blue-950 font-semibold text-sm mb-1">{b.judul}</h3>
+              <p class="text-slate-500 text-xs">{b.tanggal}</p>
+            </div>
+          </a>
+        ))}
+      </div>
+      <div class="text-center mt-8">
+        <a href="/berita" class="text-amber-600 font-medium hover:text-amber-700 transition">
+          Lihat semua berita →
+        </a>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<script>
+  const slides = document.querySelectorAll('[data-hero-slide]');
+  let current = 0;
+  setInterval(() => {
+    slides[current].classList.remove('opacity-100');
+    slides[current].classList.add('opacity-0');
+    current = (current + 1) % slides.length;
+    slides[current].classList.remove('opacity-0');
+    slides[current].classList.add('opacity-100');
+  }, 5000);
+</script>
