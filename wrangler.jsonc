@@ -1,7 +1,15 @@
 {
-  "name": "website-yasuki",
-  "compatibility_date": "2026-09-08",
-  "assets": {
-    "directory": "./dist"
-  }
+	"name": "website-yasuki",
+	"compatibility_date": "2026-09-08",
+	"assets": {
+		"directory": "./dist"
+	},
+	"d1_databases": [
+		{
+			"binding": "yasuki_db",
+			"database_name": "yasuki-db",
+			"database_id": "0969ad79-d311-40a2-b471-bb4e6ab01968",
+			"remote": true
+		}
+	]
 }
