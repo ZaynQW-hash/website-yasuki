@@ -46,39 +46,58 @@ const programCards = [
 
   <section id="form" class="px-6 py-16 bg-white scroll-mt-20">
     <div class="max-w-md mx-auto">
-      <div class="flex items-center justify-center gap-2 mb-6 text-xs text-slate-500">
+      <div class="flex items-center justify-center gap-2 mb-6 text-xs text-slate-500 flex-wrap">
         <span class="bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full font-medium">✓ Terdaftar resmi Kemenkumham RI</span>
         <span class="bg-amber-50 text-amber-700 px-3 py-1 rounded-full font-medium">10.000+ paket disalurkan</span>
       </div>
 
       <div class="bg-slate-50 border border-slate-200 rounded-xl p-6">
-        <p class="text-slate-500 text-sm mb-4">
-          Form donasi masih dalam tahap pengembangan (belum tersambung ke database). Tampilan di bawah ini baru rancangan visualnya.
-        </p>
-        <form class="flex flex-col gap-4">
-          <div>
-            <label class="text-slate-700 text-sm mb-1 block">Nama</label>
-            <input type="text" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-blue-950" placeholder="Nama lengkap" disabled />
-          </div>
-          <div>
-            <label class="text-slate-700 text-sm mb-1 block">Nomor WhatsApp</label>
-            <input type="text" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-blue-950" placeholder="08xx-xxxx-xxxx" disabled />
-          </div>
-          <div>
-            <label class="text-slate-700 text-sm mb-1 block">Program</label>
-            <select class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-blue-950" disabled>
-              {programCards.map((p) => <option>{p.nama}</option>)}
-              <option>Donasi Umum (tidak terikat program)</option>
-            </select>
-          </div>
-          <div>
-            <label class="text-slate-700 text-sm mb-1 block">Nominal</label>
-            <input type="text" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-blue-950" placeholder="Rp" disabled />
-          </div>
-          <button type="button" class="bg-amber-400 text-slate-900 font-semibold py-3 rounded-lg opacity-60 cursor-not-allowed">
-            Kirim (belum aktif)
-          </button>
-        </form>
+        <div id="form-donasi-wrapper">
+          <p class="text-slate-500 text-sm mb-4">
+            Isi data di bawah, lalu transfer sesuai instruksi yang muncul setelah kamu klik "Kirim".
+          </p>
+          <form id="form-donasi" class="flex flex-col gap-4">
+            <div>
+              <label class="text-slate-700 text-sm mb-1 block">Nama</label>
+              <input type="text" name="nama" required class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-blue-950" placeholder="Nama lengkap" />
+            </div>
+            <div>
+              <label class="text-slate-700 text-sm mb-1 block">Nomor WhatsApp</label>
+              <input type="text" name="whatsapp" required class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-blue-950" placeholder="08xx-xxxx-xxxx" />
+            </div>
+            <div>
+              <label class="text-slate-700 text-sm mb-1 block">Program</label>
+              <select name="program" required class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-blue-950">
+                {programCards.map((p) => <option value={p.nama}>{p.nama}</option>)}
+                <option value="Donasi Umum">Donasi Umum (tidak terikat program)</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-slate-700 text-sm mb-1 block">Nominal</label>
+              <input type="number" name="nominal" required min="1000" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-blue-950" placeholder="Rp" />
+            </div>
+            <div>
+              <label class="text-slate-700 text-sm mb-1 block">Pesan (opsional)</label>
+              <textarea name="pesan" rows="2" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-blue-950"></textarea>
+            </div>
+            <label class="flex items-center gap-2 text-sm text-slate-600">
+              <input type="checkbox" name="tampilkan_nama" class="rounded" />
+              Tampilkan nama saya di daftar donatur publik
+            </label>
+            <button type="submit" id="btn-submit" class="bg-amber-400 text-slate-900 font-semibold py-3 rounded-lg hover:bg-amber-300 transition">
+              Kirim
+            </button>
+            <p id="form-error" class="text-red-600 text-sm hidden"></p>
+          </form>
+        </div>
+
+        <div id="hasil-donasi" class="hidden text-center">
+          <div class="text-4xl mb-3">✅</div>
+          <h3 class="text-blue-950 font-bold text-lg mb-2">Donasi Tercatat!</h3>
+          <p class="text-slate-600 text-sm mb-4">Silakan transfer dan sertakan kode referensi ini di berita transfer:</p>
+          <p id="kode-referensi" class="text-2xl font-bold text-amber-600 bg-amber-50 rounded-lg py-3 mb-4"></p>
+          <p class="text-slate-500 text-xs">Simpan kode ini sebagai bukti donasi kamu.</p>
+        </div>
       </div>
     </div>
   </section>
@@ -123,4 +142,56 @@ const programCards = [
       </div>
     </div>
   </section>
+
+  <script>
+    const form = document.getElementById('form-donasi') as HTMLFormElement;
+    const btnSubmit = document.getElementById('btn-submit') as HTMLButtonElement;
+    const formError = document.getElementById('form-error') as HTMLParagraphElement;
+    const formWrapper = document.getElementById('form-donasi-wrapper') as HTMLDivElement;
+    const hasilDiv = document.getElementById('hasil-donasi') as HTMLDivElement;
+    const kodeEl = document.getElementById('kode-referensi') as HTMLParagraphElement;
+
+    form?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      formError.classList.add('hidden');
+      btnSubmit.disabled = true;
+      btnSubmit.textContent = 'Mengirim...';
+
+      const formData = new FormData(form);
+      const payload = {
+        nama: formData.get('nama'),
+        whatsapp: formData.get('whatsapp'),
+        program: formData.get('program'),
+        nominal: formData.get('nominal'),
+        pesan: formData.get('pesan'),
+        tampilkan_nama: formData.get('tampilkan_nama') === 'on',
+      };
+
+      try {
+        const res = await fetch('/api/donasi', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const result = await res.json();
+
+        if (!res.ok) {
+          formError.textContent = result.error || 'Terjadi kesalahan, coba lagi.';
+          formError.classList.remove('hidden');
+          btnSubmit.disabled = false;
+          btnSubmit.textContent = 'Kirim';
+          return;
+        }
+
+        kodeEl.textContent = result.kode_referensi;
+        formWrapper.classList.add('hidden');
+        hasilDiv.classList.remove('hidden');
+      } catch (err) {
+        formError.textContent = 'Gagal terhubung ke server. Periksa koneksi internet kamu.';
+        formError.classList.remove('hidden');
+        btnSubmit.disabled = false;
+        btnSubmit.textContent = 'Kirim';
+      }
+    });
+  </script>
 </Layout>
