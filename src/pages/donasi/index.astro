@@ -102,29 +102,32 @@ const programCards = [
           <div class="text-3xl mb-2">✅</div>
           <h3 class="text-blue-950 font-bold text-lg mb-4">Terima kasih! Silakan transfer ke salah satu rekening/QRIS berikut:</h3>
 
-          <div class="bg-white rounded-lg p-4 mb-4 flex justify-center">
-            <img src="/images/donasi/qris.jpg" alt="QRIS Yasuki Purworejo" class="w-48" />
+                    <div class="bg-white rounded-lg p-4 mb-4 flex justify-center">
+            <img src="/images/donasi/qris.jpg" alt="QRIS Yasuki Purworejo" class="w-72 md:w-80" />
           </div>
 
           <div class="text-left space-y-2 mb-4">
-            <div class="bg-white rounded-lg p-3 flex justify-between items-center">
+            <button type="button" class="btn-copy w-full bg-white rounded-lg p-3 flex justify-between items-center hover:bg-blue-50 transition" data-rekening="0078-01-000553-565">
               <div>
                 <p class="text-slate-500 text-xs">BRI</p>
                 <p class="text-blue-950 font-semibold">0078-01-000553-565</p>
               </div>
-            </div>
-            <div class="bg-white rounded-lg p-3 flex justify-between items-center">
+              <span class="copy-icon text-blue-900 text-xs font-medium border border-blue-900 rounded px-2 py-1">Salin</span>
+            </button>
+            <button type="button" class="btn-copy w-full bg-white rounded-lg p-3 flex justify-between items-center hover:bg-blue-50 transition" data-rekening="1850002826987">
               <div>
                 <p class="text-slate-500 text-xs">Mandiri</p>
                 <p class="text-blue-950 font-semibold">185-00-0282698-7</p>
               </div>
-            </div>
-            <div class="bg-white rounded-lg p-3 flex justify-between items-center">
+              <span class="copy-icon text-blue-900 text-xs font-medium border border-blue-900 rounded px-2 py-1">Salin</span>
+            </button>
+            <button type="button" class="btn-copy w-full bg-white rounded-lg p-3 flex justify-between items-center hover:bg-blue-50 transition" data-rekening="7168851078">
               <div>
                 <p class="text-slate-500 text-xs">BSI</p>
                 <p class="text-blue-950 font-semibold">716 885 1078</p>
               </div>
-            </div>
+              <span class="copy-icon text-blue-900 text-xs font-medium border border-blue-900 rounded px-2 py-1">Salin</span>
+            </button>
             <p class="text-slate-500 text-xs text-center">a.n. Yayasan Sosial Umi Kulsum Indonesia</p>
           </div>
 
@@ -194,7 +197,25 @@ const programCards = [
         btn.classList.remove('bg-white', 'text-blue-950', 'border-slate-300');
       });
     });
-
+    const copyButtons = document.querySelectorAll('.btn-copy');
+    copyButtons.forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const rekening = btn.getAttribute('data-rekening') || '';
+        const icon = btn.querySelector('.copy-icon') as HTMLElement;
+        try {
+          await navigator.clipboard.writeText(rekening);
+          const original = icon.textContent;
+          icon.textContent = 'Tersalin!';
+          icon.classList.add('bg-emerald-600', 'text-white', 'border-emerald-600');
+          setTimeout(() => {
+            icon.textContent = original;
+            icon.classList.remove('bg-emerald-600', 'text-white', 'border-emerald-600');
+          }, 1500);
+        } catch (err) {
+          icon.textContent = 'Gagal';
+        }
+      });
+    });
     const form = document.getElementById('form-donasi') as HTMLFormElement;
     const btnSubmit = document.getElementById('btn-submit') as HTMLButtonElement;
     const formError = document.getElementById('form-error') as HTMLParagraphElement;
