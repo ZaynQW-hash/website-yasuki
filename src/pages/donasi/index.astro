@@ -10,9 +10,9 @@ const programCards = [
     foto: "/images/program/pembangunan-asrama.jpg",
     href: "https://yasuki.site",
     external: true,
-    terkumpul: "Rp73.587.000",
+    terkumpul: "Rp81.180.000",
     target: 270000000,
-    persen: 27,
+    persen: 30,
   },
   {
     nama: "Pertanian & Ketahanan Pangan",
@@ -74,7 +74,14 @@ const programCards = [
             </div>
             <div>
               <label class="text-slate-700 text-sm mb-1 block">Nominal</label>
-              <input type="number" name="nominal" required min="1000" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-blue-950" placeholder="Rp" />
+              <div class="grid grid-cols-4 gap-2 mb-2">
+                {[10000, 50000, 100000, 200000, 500000].map((n) => (
+                  <button type="button" data-nominal={n} class="nominal-preset bg-white border border-slate-300 rounded-lg py-2 text-xs font-medium text-blue-950 hover:bg-blue-50 hover:border-blue-900 transition">
+                    {n >= 1000000 ? `${n / 1000000}jt` : `${n / 1000}rb`}
+                  </button>
+                ))}
+              </div>
+              <input type="number" name="nominal" id="input-nominal" required min="1000" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-blue-950" placeholder="Atau isi nominal lain (Rp)" />
             </div>
             <div>
               <label class="text-slate-700 text-sm mb-1 block">Pesan (opsional)</label>
@@ -92,11 +99,39 @@ const programCards = [
         </div>
 
         <div id="hasil-donasi" class="hidden text-center">
-          <div class="text-4xl mb-3">✅</div>
-          <h3 class="text-blue-950 font-bold text-lg mb-2">Donasi Tercatat!</h3>
-          <p class="text-slate-600 text-sm mb-4">Silakan transfer dan sertakan kode referensi ini di berita transfer:</p>
-          <p id="kode-referensi" class="text-2xl font-bold text-amber-600 bg-amber-50 rounded-lg py-3 mb-4"></p>
-          <p class="text-slate-500 text-xs">Simpan kode ini sebagai bukti donasi kamu.</p>
+          <div class="text-3xl mb-2">✅</div>
+          <h3 class="text-blue-950 font-bold text-lg mb-4">Terima kasih! Silakan transfer ke salah satu rekening/QRIS berikut:</h3>
+
+          <div class="bg-white rounded-lg p-4 mb-4 flex justify-center">
+            <img src="/images/donasi/qris.jpg" alt="QRIS Yasuki Purworejo" class="w-48" />
+          </div>
+
+          <div class="text-left space-y-2 mb-4">
+            <div class="bg-white rounded-lg p-3 flex justify-between items-center">
+              <div>
+                <p class="text-slate-500 text-xs">BRI</p>
+                <p class="text-blue-950 font-semibold">0078-01-000553-565</p>
+              </div>
+            </div>
+            <div class="bg-white rounded-lg p-3 flex justify-between items-center">
+              <div>
+                <p class="text-slate-500 text-xs">Mandiri</p>
+                <p class="text-blue-950 font-semibold">185-00-0282698-7</p>
+              </div>
+            </div>
+            <div class="bg-white rounded-lg p-3 flex justify-between items-center">
+              <div>
+                <p class="text-slate-500 text-xs">BSI</p>
+                <p class="text-blue-950 font-semibold">716 885 1078</p>
+              </div>
+            </div>
+            <p class="text-slate-500 text-xs text-center">a.n. Yayasan Sosial Umi Kulsum Indonesia</p>
+          </div>
+
+          <div class="border-t border-slate-200 pt-3">
+            <p class="text-slate-500 text-xs">Kode referensi (opsional, cantumkan di berita transfer untuk mempercepat verifikasi):</p>
+            <p id="kode-referensi" class="text-sm font-semibold text-slate-600"></p>
+          </div>
         </div>
       </div>
     </div>
@@ -144,6 +179,22 @@ const programCards = [
   </section>
 
   <script>
+    const presetButtons = document.querySelectorAll('.nominal-preset');
+    const inputNominal = document.getElementById('input-nominal') as HTMLInputElement;
+
+    presetButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const nominal = btn.getAttribute('data-nominal');
+        inputNominal.value = nominal || '';
+        presetButtons.forEach((b) => {
+          b.classList.remove('bg-blue-900', 'text-white', 'border-blue-900');
+          b.classList.add('bg-white', 'text-blue-950', 'border-slate-300');
+        });
+        btn.classList.add('bg-blue-900', 'text-white', 'border-blue-900');
+        btn.classList.remove('bg-white', 'text-blue-950', 'border-slate-300');
+      });
+    });
+
     const form = document.getElementById('form-donasi') as HTMLFormElement;
     const btnSubmit = document.getElementById('btn-submit') as HTMLButtonElement;
     const formError = document.getElementById('form-error') as HTMLParagraphElement;
