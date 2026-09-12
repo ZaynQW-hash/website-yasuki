@@ -1,0 +1,123 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Breadcrumb from '../../components/Breadcrumb.astro';
+
+const featured = {
+  judul: "Santunan Lansia Rutin Digelar, Puluhan Warga Lanjut Usia Terima Bantuan",
+  tanggal: "28 Agustus 2026",
+  kategori: "Santunan",
+  foto: "/images/program/santunan-lansia.jpg",
+  ringkasan:
+    "Yasuki kembali menyalurkan bantuan rutin bagi lansia dhuafa di wilayah Purworejo. Puluhan warga lanjut usia menerima paket sembako dan santunan tunai yang diserahkan langsung oleh relawan Yasuki di kediaman masing-masing penerima manfaat.",
+};
+
+const berita = [
+  {
+    judul: "Yasuki Gelar Istighosah dan Doa Bersama Warga Sekitar",
+    tanggal: "24 Agustus 2026",
+    kategori: "Keagamaan",
+    foto: "/images/program/istighosah.jpg",
+    ringkasan:
+      "Puluhan warga berkumpul dalam kegiatan istighosah dan doa bersama yang digelar Yasuki. Kegiatan ini menjadi agenda rutin untuk mempererat silaturahmi antara yayasan dan masyarakat sekitar.",
+  },
+  {
+    judul: "Kelas Bimbel Gratis Kembali Dibuka untuk Anak-Anak Binaan",
+    tanggal: "20 Agustus 2026",
+    kategori: "Pendidikan",
+    foto: "/images/program/bimbel-gratis.jpg",
+    ringkasan:
+      "Setelah libur semester, program bimbingan belajar gratis Yasuki kembali berjalan. Puluhan anak binaan antusias mengikuti kelas tambahan yang difasilitasi oleh relawan pengajar.",
+  },
+  {
+    judul: "Wakaf Al-Qur'an Disalurkan ke Sejumlah TPQ di Purworejo",
+    tanggal: "15 Agustus 2026",
+    kategori: "Keagamaan",
+    foto: "/images/program/wakaf-alquran.jpg",
+    ringkasan:
+      "Sebanyak puluhan mushaf Al-Qur'an hasil wakaf donatur telah disalurkan ke beberapa TPQ dan musala di sekitar Purworejo. Penyaluran ini diharapkan mendukung kegiatan belajar mengaji anak-anak.",
+  },
+  {
+    judul: "Shobarumat: Donasi Barang Layak Pakai Terus Mengalir",
+    tanggal: "10 Agustus 2026",
+    kategori: "Sosial",
+    foto: "/images/program/shobarumat.jpg",
+    ringkasan:
+      "Program Shobarumat (Shodaqoh Barang Untuk Umat) terus menerima donasi pakaian dan barang layak pakai dari masyarakat. Barang-barang ini kemudian disortir dan disalurkan kepada keluarga dhuafa.",
+  },
+  {
+    judul: "Progres Hafalan Santri Tahfidz Yasuki Terus Meningkat",
+    tanggal: "5 Agustus 2026",
+    kategori: "Pendidikan",
+    foto: "/images/program/tahfidz.jpg",
+    ringkasan:
+      "Program Tahfidzul Qur'an binaan Yasuki mencatat perkembangan positif. Sejumlah santri berhasil menambah hafalan baru dalam beberapa bulan terakhir berkat bimbingan intensif para pengajar.",
+  },
+];
+---
+<Layout title="Berita (Lama - Dummy) — Yasuki">
+  <section class="relative pt-24 pb-16 px-6 text-center overflow-hidden">
+    <img src="/images/program/bimbel-gratis.jpg" alt="Kegiatan Yasuki" class="absolute inset-0 w-full h-full object-cover" />
+    <div class="absolute inset-0 bg-blue-950/85"></div>
+    <Breadcrumb items={[{ label: "Beranda", href: "/" }, { label: "Berita (Lama)" }]} />
+    <div class="relative z-10 mt-6">
+      <p class="text-amber-400 font-medium text-sm uppercase tracking-wide mb-2">Kabar Yasuki</p>
+      <h1 class="text-3xl md:text-5xl font-bold text-white mb-4">Berita & Kegiatan</h1>
+      <p class="text-blue-100 max-w-xl mx-auto">
+        Kabar terbaru dari lapangan — santunan, kegiatan sosial, dan progres program-program Yasuki.
+      </p>
+    </div>
+  </section>
+
+  <section class="px-6 py-16 bg-white">
+    <div class="max-w-6xl mx-auto">
+      <p class="text-amber-600 text-xs font-medium uppercase tracking-wide mb-6">
+        *Versi lama (dummy) — disimpan sementara buat perbandingan dengan versi baru di /berita
+      </p>
+
+      <!-- Featured -->
+      <a href="#" class="group block bg-slate-50 border border-slate-200 rounded-xl overflow-hidden mb-10 md:grid md:grid-cols-2">
+        <div class="h-56 md:h-full">
+          <img src={featured.foto} alt={featured.judul} class="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+        </div>
+        <div class="p-6 flex flex-col justify-center">
+          <span class="inline-block bg-amber-50 text-amber-700 text-xs font-medium px-3 py-1 rounded-full mb-3 w-fit">
+            {featured.kategori}
+          </span>
+          <h2 class="text-xl md:text-2xl font-bold text-blue-950 mb-2">{featured.judul}</h2>
+          <p class="text-slate-500 text-xs mb-3">{featured.tanggal}</p>
+          <p class="text-slate-600 text-sm">{featured.ringkasan}</p>
+        </div>
+      </a>
+
+      <!-- Grid -->
+      <div class="grid md:grid-cols-3 gap-6">
+        {berita.map((b) => (
+          <a href="#" class="group bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm flex flex-col">
+            <div class="h-40 overflow-hidden">
+              <img src={b.foto} alt={b.judul} class="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+            </div>
+            <div class="p-4 flex flex-col flex-1">
+              <span class="inline-block bg-amber-50 text-amber-700 text-[10px] font-medium px-2.5 py-0.5 rounded-full mb-2 w-fit">
+                {b.kategori}
+              </span>
+              <h3 class="text-blue-950 font-semibold text-sm mb-1">{b.judul}</h3>
+              <p class="text-slate-500 text-xs mb-2">{b.tanggal}</p>
+              <p class="text-slate-600 text-xs line-clamp-3 flex-1">{b.ringkasan}</p>
+            </div>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Penutup -->
+  <section class="px-6 py-16 bg-gradient-to-br from-amber-400 to-amber-500 text-center">
+    <h2 class="text-xl md:text-2xl font-bold text-slate-900 mb-3">Ingin Jadi Bagian dari Kabar Baik Berikutnya?</h2>
+    <p class="text-slate-800 max-w-md mx-auto mb-6">
+      Donasi kamu bisa jadi cerita baik yang kami bagikan di halaman ini.
+    </p>
+    <a href="/donasi" class="inline-block bg-slate-900 text-white px-8 py-3 rounded-lg font-semibold hover:bg-slate-800 transition">
+      Donasi Sekarang
+    </a>
+  </section>
+</Layout>

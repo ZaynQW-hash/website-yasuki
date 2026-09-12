@@ -177,7 +177,8 @@ const kategoriLamaTidakDikenal = !KATEGORI_BERITA.includes(berita.kategori);
         return;
       }
 
-      const placeholder = `\n[FOTO:${data.url}]\n`;
+      // Baris kosong di sekitar penanda foto, biar selalu jadi paragraf/blok sendiri
+      const placeholder = `\n\n[FOTO:${data.url}]\n\n`;
       const start = kontenTextarea.selectionStart;
       const end = kontenTextarea.selectionEnd;
       const text = kontenTextarea.value;

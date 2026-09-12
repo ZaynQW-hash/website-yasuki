@@ -158,7 +158,9 @@ const admin = Astro.locals.admin;
         return;
       }
 
-      const placeholder = `\n[FOTO:${data.url}]\n`;
+      // Baris kosong di sekitar penanda foto, biar selalu jadi paragraf/blok sendiri
+      // (bukan nyampur sama teks di sekitarnya) pas ditampilkan di halaman publik.
+      const placeholder = `\n\n[FOTO:${data.url}]\n\n`;
       const start = kontenTextarea.selectionStart;
       const end = kontenTextarea.selectionEnd;
       const text = kontenTextarea.value;

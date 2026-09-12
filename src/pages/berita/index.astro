@@ -1,58 +1,28 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import Breadcrumb from '../../components/Breadcrumb.astro';
+import { env } from "cloudflare:workers";
 
-const featured = {
-  judul: "Santunan Lansia Rutin Digelar, Puluhan Warga Lanjut Usia Terima Bantuan",
-  tanggal: "28 Agustus 2026",
-  kategori: "Santunan",
-  foto: "/images/program/santunan-lansia.jpg",
-  ringkasan:
-    "Yasuki kembali menyalurkan bantuan rutin bagi lansia dhuafa di wilayah Purworejo. Puluhan warga lanjut usia menerima paket sembako dan santunan tunai yang diserahkan langsung oleh relawan Yasuki di kediaman masing-masing penerima manfaat.",
-};
+interface BeritaRow {
+  id: number;
+  judul: string;
+  slug: string;
+  kategori: string;
+  ringkasan: string;
+  foto: string | null;
+  created_at: string;
+}
 
-const berita = [
-  {
-    judul: "Yasuki Gelar Istighosah dan Doa Bersama Warga Sekitar",
-    tanggal: "24 Agustus 2026",
-    kategori: "Keagamaan",
-    foto: "/images/program/istighosah.jpg",
-    ringkasan:
-      "Puluhan warga berkumpul dalam kegiatan istighosah dan doa bersama yang digelar Yasuki. Kegiatan ini menjadi agenda rutin untuk mempererat silaturahmi antara yayasan dan masyarakat sekitar.",
-  },
-  {
-    judul: "Kelas Bimbel Gratis Kembali Dibuka untuk Anak-Anak Binaan",
-    tanggal: "20 Agustus 2026",
-    kategori: "Pendidikan",
-    foto: "/images/program/bimbel-gratis.jpg",
-    ringkasan:
-      "Setelah libur semester, program bimbingan belajar gratis Yasuki kembali berjalan. Puluhan anak binaan antusias mengikuti kelas tambahan yang difasilitasi oleh relawan pengajar.",
-  },
-  {
-    judul: "Wakaf Al-Qur'an Disalurkan ke Sejumlah TPQ di Purworejo",
-    tanggal: "15 Agustus 2026",
-    kategori: "Keagamaan",
-    foto: "/images/program/wakaf-alquran.jpg",
-    ringkasan:
-      "Sebanyak puluhan mushaf Al-Qur'an hasil wakaf donatur telah disalurkan ke beberapa TPQ dan musala di sekitar Purworejo. Penyaluran ini diharapkan mendukung kegiatan belajar mengaji anak-anak.",
-  },
-  {
-    judul: "Shobarumat: Donasi Barang Layak Pakai Terus Mengalir",
-    tanggal: "10 Agustus 2026",
-    kategori: "Sosial",
-    foto: "/images/program/shobarumat.jpg",
-    ringkasan:
-      "Program Shobarumat (Shodaqoh Barang Untuk Umat) terus menerima donasi pakaian dan barang layak pakai dari masyarakat. Barang-barang ini kemudian disortir dan disalurkan kepada keluarga dhuafa.",
-  },
-  {
-    judul: "Progres Hafalan Santri Tahfidz Yasuki Terus Meningkat",
-    tanggal: "5 Agustus 2026",
-    kategori: "Pendidikan",
-    foto: "/images/program/tahfidz.jpg",
-    ringkasan:
-      "Program Tahfidzul Qur'an binaan Yasuki mencatat perkembangan positif. Sejumlah santri berhasil menambah hafalan baru dalam beberapa bulan terakhir berkat bimbingan intensif para pengajar.",
-  },
-];
+const db = env.yasuki_db;
+const { results } = await db
+  .prepare("SELECT id, judul, slug, kategori, ringkasan, foto, created_at FROM berita WHERE published = 1 ORDER BY created_at DESC")
+  .all<BeritaRow>();
+
+const [featured, ...sisanya] = results;
+
+function formatTanggal(iso: string): string {
+  return new Date(iso.replace(" ", "T") + "Z").toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
+}
 ---
 <Layout title="Berita — Yasuki">
   <section class="relative pt-24 pb-16 px-6 text-center overflow-hidden">
@@ -70,41 +40,59 @@ const berita = [
 
   <section class="px-6 py-16 bg-white">
     <div class="max-w-6xl mx-auto">
-      <p class="text-amber-600 text-xs font-medium uppercase tracking-wide mb-6">*Contoh berita sementara</p>
+      {
+        results.length === 0 && (
+          <p class="text-center text-slate-400 py-16">Belum ada berita yang tayang.</p>
+        )
+      }
 
-      <!-- Featured -->
-      <a href="#" class="group block bg-slate-50 border border-slate-200 rounded-xl overflow-hidden mb-10 md:grid md:grid-cols-2">
-        <div class="h-56 md:h-full">
-          <img src={featured.foto} alt={featured.judul} class="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
-        </div>
-        <div class="p-6 flex flex-col justify-center">
-          <span class="inline-block bg-amber-50 text-amber-700 text-xs font-medium px-3 py-1 rounded-full mb-3 w-fit">
-            {featured.kategori}
-          </span>
-          <h2 class="text-xl md:text-2xl font-bold text-blue-950 mb-2">{featured.judul}</h2>
-          <p class="text-slate-500 text-xs mb-3">{featured.tanggal}</p>
-          <p class="text-slate-600 text-sm">{featured.ringkasan}</p>
-        </div>
-      </a>
-
-      <!-- Grid -->
-      <div class="grid md:grid-cols-3 gap-6">
-        {berita.map((b) => (
-          <a href="#" class="group bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm flex flex-col">
-            <div class="h-40 overflow-hidden">
-              <img src={b.foto} alt={b.judul} class="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+      {
+        featured && (
+          <a href={`/berita/${featured.slug}`} class="group block bg-slate-50 border border-slate-200 rounded-xl overflow-hidden mb-10 md:grid md:grid-cols-2">
+            <div class="h-56 md:h-full">
+              {featured.foto ? (
+                <img src={featured.foto} alt={featured.judul} class="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+              ) : (
+                <div class="w-full h-full bg-slate-200" />
+              )}
             </div>
-            <div class="p-4 flex flex-col flex-1">
-              <span class="inline-block bg-amber-50 text-amber-700 text-[10px] font-medium px-2.5 py-0.5 rounded-full mb-2 w-fit">
-                {b.kategori}
+            <div class="p-6 flex flex-col justify-center">
+              <span class="inline-block bg-amber-50 text-amber-700 text-xs font-medium px-3 py-1 rounded-full mb-3 w-fit">
+                {featured.kategori}
               </span>
-              <h3 class="text-blue-950 font-semibold text-sm mb-1">{b.judul}</h3>
-              <p class="text-slate-500 text-xs mb-2">{b.tanggal}</p>
-              <p class="text-slate-600 text-xs line-clamp-3 flex-1">{b.ringkasan}</p>
+              <h2 class="text-xl md:text-2xl font-bold text-blue-950 mb-2">{featured.judul}</h2>
+              <p class="text-slate-500 text-xs mb-3">{formatTanggal(featured.created_at)}</p>
+              <p class="text-slate-600 text-sm">{featured.ringkasan}</p>
             </div>
           </a>
-        ))}
-      </div>
+        )
+      }
+
+      {
+        sisanya.length > 0 && (
+          <div class="grid md:grid-cols-3 gap-6">
+            {sisanya.map((b) => (
+              <a href={`/berita/${b.slug}`} class="group bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm flex flex-col">
+                <div class="h-40 overflow-hidden">
+                  {b.foto ? (
+                    <img src={b.foto} alt={b.judul} class="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                  ) : (
+                    <div class="w-full h-full bg-slate-200" />
+                  )}
+                </div>
+                <div class="p-4 flex flex-col flex-1">
+                  <span class="inline-block bg-amber-50 text-amber-700 text-[10px] font-medium px-2.5 py-0.5 rounded-full mb-2 w-fit">
+                    {b.kategori}
+                  </span>
+                  <h3 class="text-blue-950 font-semibold text-sm mb-1">{b.judul}</h3>
+                  <p class="text-slate-500 text-xs mb-2">{formatTanggal(b.created_at)}</p>
+                  <p class="text-slate-600 text-xs line-clamp-3 flex-1">{b.ringkasan}</p>
+                </div>
+              </a>
+            ))}
+          </div>
+        )
+      }
     </div>
   </section>
 
