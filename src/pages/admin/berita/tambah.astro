@@ -58,25 +58,11 @@ const admin = Astro.locals.admin;
         <p class="text-xs text-slate-400 mt-1">Ditampilkan sebagai cuplikan singkat di halaman daftar berita.</p>
       </div>
 
-      // buat field textarea #konten menjadi rich editor
       <div>
-        <div class="flex items-center justify-between mb-1">
-          <label for="konten" class="block text-sm font-medium text-slate-700">Isi Berita</label>
-          <button type="button" id="btn-sisip-foto" class="text-xs text-blue-700 hover:underline font-medium">
-            + Sisipkan foto di sini
-          </button>
-        </div>
-        <textarea
-          id="konten"
-          name="konten"
-          rows="10"
-          required
-          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-700"
-        ></textarea>
-        <input type="file" id="input-sisip-foto" accept="image/*" class="hidden" />
-        <p class="text-xs text-slate-400 mt-1">
-          Ketik teks seperti biasa. Buat paragraf baru dengan Enter dua kali. Klik "Sisipkan foto" untuk menaruh foto di posisi kursor kamu sekarang.
-        </p>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Isi Berita</label>
+        <div id="editor-konten" class="bg-white rounded-lg border border-slate-300"></div>
+        <textarea id="konten" name="konten" class="hidden"></textarea>
+        <p class="text-xs text-slate-400 mt-1">Pakai toolbar buat bold, heading, list, link, dan tombol gambar buat sisip foto langsung di teks.</p>
       </div>
 
       <div>
@@ -106,8 +92,18 @@ const admin = Astro.locals.admin;
   </div>
 </AdminLayout>
 
-<script>
-  function slugify(text: string): string {
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.7/quill.snow.css" />
+
+<style>
+  #editor-konten :global(.ql-editor) {
+    min-height: 260px;
+    font-size: 0.875rem;
+  }
+</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.7/quill.min.js" is:inline></script>
+<script is:inline>
+  function slugify(text) {
     return text
       .toLowerCase()
       .trim()
@@ -116,90 +112,96 @@ const admin = Astro.locals.admin;
       .replace(/-+/g, "-");
   }
 
-  const judulInput = document.getElementById("judul") as HTMLInputElement;
-  const slugInput = document.getElementById("slug") as HTMLInputElement;
-  let slugManuallyEdited = false;
+  var judulInput = document.getElementById("judul");
+  var slugInput = document.getElementById("slug");
+  var slugManuallyEdited = false;
 
-  slugInput.addEventListener("input", () => {
+  slugInput.addEventListener("input", function () {
     slugManuallyEdited = true;
   });
 
-  judulInput.addEventListener("input", () => {
+  judulInput.addEventListener("input", function () {
     if (!slugManuallyEdited) {
       slugInput.value = slugify(judulInput.value);
     }
   });
 
-  // --- Sisip foto di tengah isi berita ---
-  const kontenTextarea = document.getElementById("konten") as HTMLTextAreaElement;
-  const btnSisipFoto = document.getElementById("btn-sisip-foto") as HTMLButtonElement;
-  const inputSisipFoto = document.getElementById("input-sisip-foto") as HTMLInputElement;
-
-  btnSisipFoto.addEventListener("click", () => {
-    inputSisipFoto.click();
+  // --- Rich text editor ---
+  var quill = new Quill("#editor-konten", {
+    theme: "snow",
+    placeholder: "Tulis isi berita di sini...",
+    modules: {
+      toolbar: {
+        container: [[{ header: [2, 3, false] }], ["bold", "italic", "underline"], ["blockquote"], [{ list: "ordered" }, { list: "bullet" }], ["link", "image"], ["clean"]],
+        handlers: { image: imageHandler },
+      },
+    },
   });
 
-  inputSisipFoto.addEventListener("change", async () => {
-    const file = inputSisipFoto.files?.[0];
-    if (!file) return;
+  function imageHandler() {
+    var input = document.createElement("input");
+    input.setAttribute("type", "file");
+    input.setAttribute("accept", "image/*");
+    input.click();
 
-    const originalLabel = btnSisipFoto.textContent;
-    btnSisipFoto.textContent = "Mengupload...";
-    btnSisipFoto.disabled = true;
+    input.onchange = async function () {
+      var file = input.files[0];
+      if (!file) return;
 
-    const fd = new FormData();
-    fd.append("foto", file);
+      var range = quill.getSelection(true);
+      quill.insertText(range.index, "Mengupload foto...", { italic: true });
 
-    try {
-      const res = await fetch("/api/admin/berita/upload-foto", { method: "POST", body: fd });
-      const data = (await res.json()) as { url?: string; error?: string };
+      var fd = new FormData();
+      fd.append("foto", file);
 
-      if (!res.ok || !data.url) {
-        alert(data.error || "Gagal upload foto");
-        return;
+      try {
+        var res = await fetch("/api/admin/berita/upload-foto", { method: "POST", body: fd });
+        var data = await res.json();
+
+        quill.deleteText(range.index, "Mengupload foto...".length);
+
+        if (!res.ok || !data.url) {
+          alert(data.error || "Gagal upload foto");
+          return;
+        }
+
+        quill.insertEmbed(range.index, "image", data.url);
+        quill.setSelection(range.index + 1);
+      } catch (err) {
+        quill.deleteText(range.index, "Mengupload foto...".length);
+        alert("Terjadi kesalahan, coba lagi");
       }
-
-      // Baris kosong di sekitar penanda foto, biar selalu jadi paragraf/blok sendiri
-      // (bukan nyampur sama teks di sekitarnya) pas ditampilkan di halaman publik.
-      const placeholder = `\n\n[FOTO:${data.url}]\n\n`;
-      const start = kontenTextarea.selectionStart;
-      const end = kontenTextarea.selectionEnd;
-      const text = kontenTextarea.value;
-      kontenTextarea.value = text.slice(0, start) + placeholder + text.slice(end);
-      kontenTextarea.focus();
-      const newPos = start + placeholder.length;
-      kontenTextarea.setSelectionRange(newPos, newPos);
-    } catch {
-      alert("Terjadi kesalahan, coba lagi");
-    } finally {
-      btnSisipFoto.textContent = originalLabel;
-      btnSisipFoto.disabled = false;
-      inputSisipFoto.value = "";
-    }
-  });
+    };
+  }
 
   // --- Submit form ---
-  const form = document.getElementById("form-berita") as HTMLFormElement;
-  const btnSubmit = document.getElementById("btn-submit") as HTMLButtonElement;
-  const errorMsg = document.getElementById("error-msg") as HTMLParagraphElement;
-  const publishedCheckbox = document.getElementById("published") as HTMLInputElement;
+  var form = document.getElementById("form-berita");
+  var btnSubmit = document.getElementById("btn-submit");
+  var errorMsg = document.getElementById("error-msg");
+  var publishedCheckbox = document.getElementById("published");
+  var kontenHidden = document.getElementById("konten");
 
-  form.addEventListener("submit", async (e) => {
+  form.addEventListener("submit", async function (e) {
     e.preventDefault();
     errorMsg.classList.add("hidden");
+
+    kontenHidden.value = quill.root.innerHTML;
+
+    if (quill.getText().trim().length === 0) {
+      errorMsg.textContent = "Isi berita tidak boleh kosong";
+      errorMsg.classList.remove("hidden");
+      return;
+    }
+
     btnSubmit.disabled = true;
     btnSubmit.textContent = "Menyimpan...";
 
-    const formData = new FormData(form);
+    var formData = new FormData(form);
     formData.set("published", publishedCheckbox.checked ? "1" : "0");
 
     try {
-      const res = await fetch("/api/admin/berita", {
-        method: "POST",
-        body: formData,
-      });
-
-      const data = (await res.json()) as { error?: string };
+      var res = await fetch("/api/admin/berita", { method: "POST", body: formData });
+      var data = await res.json();
 
       if (!res.ok) {
         errorMsg.textContent = data.error || "Gagal menyimpan berita";
@@ -210,7 +212,7 @@ const admin = Astro.locals.admin;
       }
 
       window.location.href = "/admin/berita";
-    } catch {
+    } catch (err) {
       errorMsg.textContent = "Terjadi kesalahan, coba lagi";
       errorMsg.classList.remove("hidden");
       btnSubmit.disabled = false;

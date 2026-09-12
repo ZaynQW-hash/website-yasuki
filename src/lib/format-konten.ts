@@ -7,14 +7,8 @@ function escapeHtml(str: string): string {
     .replace(/'/g, "&#039;");
 }
 
-/**
- * Ubah teks isi berita jadi HTML aman.
- * - Paragraf dipisah oleh baris kosong (Enter dua kali)
- * - Baris tunggal di dalam 1 paragraf jadi <br />
- * - Blok yang isinya cuma "[FOTO:url]" diubah jadi <img>
- * Semua teks di-escape dulu sebelum diproses, jadi aman dari suntikan HTML/script.
- */
-export function renderKontenBerita(konten: string): string {
+/** Konversi format lama (teks polos + penanda [FOTO:url]) jadi HTML. Dipakai buat data lama, sebelum ada rich text editor. */
+function renderFormatLama(konten: string): string {
   const blocks = konten
     .split(/\n\s*\n/)
     .map((b) => b.trim())
@@ -32,4 +26,17 @@ export function renderKontenBerita(konten: string): string {
       return `<p class="mb-4 leading-relaxed">${escaped}</p>`;
     })
     .join("\n");
+}
+
+/**
+ * Ubah kolom `konten` jadi HTML siap tampil (dipakai di halaman publik & buat isi awal rich text editor).
+ * - Kalau kontennya udah HTML asli (hasil rich text editor), langsung dipakai apa adanya.
+ * - Kalau masih format lama (teks polos + [FOTO:url], dari sebelum ada rich text editor), dikonversi dulu.
+ */
+export function renderKontenBerita(konten: string): string {
+  const trimmed = konten.trim();
+  if (trimmed.startsWith("<")) {
+    return konten;
+  }
+  return renderFormatLama(konten);
 }

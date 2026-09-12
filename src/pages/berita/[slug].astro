@@ -45,7 +45,7 @@ const kontenHtml = renderKontenBerita(berita.konten);
     }
     <div class="absolute inset-0 bg-blue-950/85"></div>
     <Breadcrumb items={[{ label: "Beranda", href: "/" }, { label: "Berita", href: "/berita" }, { label: berita.judul }]} />
-    <div class="relative z-10 mt-6">
+    <div class="relative z-10 mt-6 fade-in-up">
       <span class="inline-block bg-amber-400 text-slate-900 text-xs font-semibold px-3 py-1 rounded-full mb-4">
         {berita.kategori}
       </span>
@@ -55,7 +55,7 @@ const kontenHtml = renderKontenBerita(berita.konten);
   </section>
 
   <section class="px-6 py-16 bg-white">
-    <article class="max-w-2xl mx-auto text-slate-700" set:html={kontenHtml} />
+    <article class="artikel-konten max-w-2xl mx-auto text-slate-700 fade-in-up fade-in-delay" set:html={kontenHtml} />
 
     <div class="max-w-2xl mx-auto mt-10 pt-6 border-t border-slate-200">
       <a href="/berita" class="text-blue-700 font-medium text-sm hover:underline">← Kembali ke semua berita</a>
@@ -73,3 +73,70 @@ const kontenHtml = renderKontenBerita(berita.konten);
     </a>
   </section>
 </Layout>
+
+<style>
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .fade-in-up {
+    animation: fadeInUp 0.6s ease-out both;
+  }
+  .fade-in-delay {
+    animation-delay: 0.15s;
+  }
+
+  .artikel-konten :global(h2) {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #172554;
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+  }
+  .artikel-konten :global(h3) {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #172554;
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+  .artikel-konten :global(p) {
+    margin-bottom: 1rem;
+    line-height: 1.75;
+  }
+  .artikel-konten :global(ul),
+  .artikel-konten :global(ol) {
+    margin: 1rem 0 1rem 1.5rem;
+  }
+  .artikel-konten :global(ul) {
+    list-style: disc;
+  }
+  .artikel-konten :global(ol) {
+    list-style: decimal;
+  }
+  .artikel-konten :global(li) {
+    margin-bottom: 0.5rem;
+  }
+  .artikel-konten :global(blockquote) {
+    border-left: 4px solid #fbbf24;
+    padding-left: 1rem;
+    font-style: italic;
+    color: #475569;
+    margin: 1.5rem 0;
+  }
+  .artikel-konten :global(a) {
+    color: #1d4ed8;
+    text-decoration: underline;
+  }
+  .artikel-konten :global(img) {
+    border-radius: 0.75rem;
+    margin: 1.5rem 0;
+    width: 100%;
+  }
+</style>

@@ -48,10 +48,13 @@ function formatTanggal(iso: string): string {
 
       {
         featured && (
-          <a href={`/berita/${featured.slug}`} class="group block bg-slate-50 border border-slate-200 rounded-xl overflow-hidden mb-10 md:grid md:grid-cols-2">
-            <div class="h-56 md:h-full">
+          <a
+            href={`/berita/${featured.slug}`}
+            class="reveal group block bg-slate-50 border border-slate-200 rounded-xl overflow-hidden mb-10 md:grid md:grid-cols-2 transition-shadow hover:shadow-lg"
+          >
+            <div class="h-56 md:h-full overflow-hidden">
               {featured.foto ? (
-                <img src={featured.foto} alt={featured.judul} class="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                <img src={featured.foto} alt={featured.judul} class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
               ) : (
                 <div class="w-full h-full bg-slate-200" />
               )}
@@ -71,11 +74,15 @@ function formatTanggal(iso: string): string {
       {
         sisanya.length > 0 && (
           <div class="grid md:grid-cols-3 gap-6">
-            {sisanya.map((b) => (
-              <a href={`/berita/${b.slug}`} class="group bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm flex flex-col">
+            {sisanya.map((b, i) => (
+              <a
+                href={`/berita/${b.slug}`}
+                class="reveal group bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm flex flex-col transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+                style={`transition-delay: ${Math.min(i * 80, 400)}ms`}
+              >
                 <div class="h-40 overflow-hidden">
                   {b.foto ? (
-                    <img src={b.foto} alt={b.judul} class="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                    <img src={b.foto} alt={b.judul} class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
                   ) : (
                     <div class="w-full h-full bg-slate-200" />
                   )}
@@ -107,3 +114,40 @@ function formatTanggal(iso: string): string {
     </a>
   </section>
 </Layout>
+
+<style>
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition-property: opacity, transform;
+    transition-duration: 0.7s;
+    transition-timing-function: ease-out;
+  }
+  .reveal.revealed {
+    opacity: 1;
+    transform: translateY(0);
+  }
+</style>
+
+<script>
+  const items = document.querySelectorAll(".reveal");
+
+  if ("IntersectionObserver" in window) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("revealed");
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.15 },
+    );
+
+    items.forEach((item) => observer.observe(item));
+  } else {
+    // fallback kalau browser lama nggak support IntersectionObserver
+    items.forEach((item) => item.classList.add("revealed"));
+  }
+</script>
