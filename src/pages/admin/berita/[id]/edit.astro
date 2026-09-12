@@ -1,6 +1,7 @@
 ---
 import AdminLayout from "../../../../layouts/AdminLayout.astro";
 import { env } from "cloudflare:workers";
+import { KATEGORI_BERITA } from "../../../../lib/kategori-berita";
 
 const admin = Astro.locals.admin;
 const id = Number(Astro.params.id);
@@ -25,11 +26,13 @@ const berita = await db
 if (!berita) {
   return Astro.redirect("/admin/berita");
 }
+
+const kategoriLamaTidakDikenal = !KATEGORI_BERITA.includes(berita.kategori);
 ---
 
 <AdminLayout title={`Edit Berita — ${berita.judul}`} admin={admin}>
   <div class="max-w-2xl mx-auto">
-    <h1 class="text-2xl font-bold text-slate-800 mb-6">Edit Berita</h1>
+    <h1 class="text-xl font-bold text-slate-800 mb-6">Edit Berita</h1>
 
     <form id="form-berita" class="bg-white rounded-xl shadow-sm p-6 space-y-5">
       <div>
@@ -58,21 +61,23 @@ if (!berita) {
 
       <div>
         <label for="kategori" class="block text-sm font-medium text-slate-700 mb-1">Kategori</label>
-        <input
-          list="kategori-list"
-          type="text"
+        <select
           id="kategori"
           name="kategori"
           required
-          value={berita.kategori}
-          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-700"
-        />
-        <datalist id="kategori-list">
-          <option value="Update Pembangunan" />
-          <option value="Kegiatan" />
-          <option value="Pengumuman" />
-          <option value="Donasi" />
-        </datalist>
+          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-700"
+        >
+          {kategoriLamaTidakDikenal && (
+            <option value={berita.kategori} selected>
+              {berita.kategori} (lama)
+            </option>
+          )}
+          {KATEGORI_BERITA.map((k) => (
+            <option value={k} selected={k === berita.kategori}>
+              {k}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div>
@@ -88,7 +93,12 @@ if (!berita) {
       </div>
 
       <div>
-        <label for="konten" class="block text-sm font-medium text-slate-700 mb-1">Isi Berita</label>
+        <div class="flex items-center justify-between mb-1">
+          <label for="konten" class="block text-sm font-medium text-slate-700">Isi Berita</label>
+          <button type="button" id="btn-sisip-foto" class="text-xs text-blue-700 hover:underline font-medium">
+            + Sisipkan foto di sini
+          </button>
+        </div>
         <textarea
           id="konten"
           name="konten"
@@ -97,15 +107,19 @@ if (!berita) {
           class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-700"
           set:text={berita.konten}
         ></textarea>
+        <input type="file" id="input-sisip-foto" accept="image/*" class="hidden" />
+        <p class="text-xs text-slate-400 mt-1">
+          Ketik teks seperti biasa. Buat paragraf baru dengan Enter dua kali. Klik "Sisipkan foto" untuk menaruh foto di posisi kursor kamu sekarang.
+        </p>
       </div>
 
       <div>
-        <label for="foto" class="block text-sm font-medium text-slate-700 mb-1">Foto</label>
+        <label for="foto" class="block text-sm font-medium text-slate-700 mb-1">Foto Sampul</label>
         {
           berita.foto && (
             <div class="mb-2">
               <img src={berita.foto} alt={berita.judul} class="w-32 h-32 object-cover rounded-lg" />
-              <p class="text-xs text-slate-400 mt-1">Foto saat ini. Upload baru buat ganti, atau biarkan kosong buat tetap pakai ini.</p>
+              <p class="text-xs text-slate-400 mt-1">Foto sampul saat ini. Upload baru buat ganti, atau biarkan kosong buat tetap pakai ini.</p>
             </div>
           )
         }
@@ -134,6 +148,53 @@ if (!berita) {
 </AdminLayout>
 
 <script define:vars={{ beritaId: berita.id }}>
+  // --- Sisip foto di tengah isi berita ---
+  const kontenTextarea = document.getElementById("konten");
+  const btnSisipFoto = document.getElementById("btn-sisip-foto");
+  const inputSisipFoto = document.getElementById("input-sisip-foto");
+
+  btnSisipFoto.addEventListener("click", () => {
+    inputSisipFoto.click();
+  });
+
+  inputSisipFoto.addEventListener("change", async () => {
+    const file = inputSisipFoto.files?.[0];
+    if (!file) return;
+
+    const originalLabel = btnSisipFoto.textContent;
+    btnSisipFoto.textContent = "Mengupload...";
+    btnSisipFoto.disabled = true;
+
+    const fd = new FormData();
+    fd.append("foto", file);
+
+    try {
+      const res = await fetch("/api/admin/berita/upload-foto", { method: "POST", body: fd });
+      const data = await res.json();
+
+      if (!res.ok || !data.url) {
+        alert(data.error || "Gagal upload foto");
+        return;
+      }
+
+      const placeholder = `\n[FOTO:${data.url}]\n`;
+      const start = kontenTextarea.selectionStart;
+      const end = kontenTextarea.selectionEnd;
+      const text = kontenTextarea.value;
+      kontenTextarea.value = text.slice(0, start) + placeholder + text.slice(end);
+      kontenTextarea.focus();
+      const newPos = start + placeholder.length;
+      kontenTextarea.setSelectionRange(newPos, newPos);
+    } catch {
+      alert("Terjadi kesalahan, coba lagi");
+    } finally {
+      btnSisipFoto.textContent = originalLabel;
+      btnSisipFoto.disabled = false;
+      inputSisipFoto.value = "";
+    }
+  });
+
+  // --- Submit form ---
   const form = document.getElementById("form-berita");
   const btnSubmit = document.getElementById("btn-submit");
   const errorMsg = document.getElementById("error-msg");
