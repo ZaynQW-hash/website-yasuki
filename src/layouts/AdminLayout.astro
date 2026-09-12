@@ -1,5 +1,5 @@
 ---
-import Layout from "./Layout.astro";
+import "../styles/global.css";
 import type { SessionPayload } from "../lib/auth";
 
 interface Props {
@@ -11,54 +11,108 @@ const { title, admin } = Astro.props;
 const currentPath = Astro.url.pathname;
 
 const navItems = [
-  { href: "/admin", label: "Dashboard" },
-  { href: "/admin/donasi", label: "Donasi" },
+  {
+    href: "/admin",
+    label: "Dashboard",
+    icon: "M11.47 3.84a.75.75 0 011.06 0l8.69 8.69a.75.75 0 101.06-1.06l-8.689-8.69a2.25 2.25 0 00-3.182 0l-8.69 8.69a.75.75 0 001.061 1.06l8.69-8.69z M12 5.432l8.159 8.159c.03.03.06.058.091.086v6.198c0 1.035-.84 1.875-1.875 1.875H15a.75.75 0 01-.75-.75v-4.5a.75.75 0 00-.75-.75h-3a.75.75 0 00-.75.75V21a.75.75 0 01-.75.75H5.625a1.875 1.875 0 01-1.875-1.875v-6.198a2.29 2.29 0 00.091-.086L12 5.43z",
+  },
+  {
+    href: "/admin/donasi",
+    label: "Donasi",
+    icon: "M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z",
+  },
 ];
 ---
 
-<Layout title={title}>
-  <div class="min-h-screen bg-slate-50 flex">
-    <aside class="w-60 bg-blue-900 text-white flex-shrink-0 hidden md:flex md:flex-col">
-      <div class="px-6 py-5 border-b border-blue-800">
-        <img src="/images/logo.png" alt="Yasuki" class="h-8 mb-2 brightness-0 invert" />
-        <p class="text-xs text-blue-200">Dashboard Admin</p>
-      </div>
-      <nav class="flex-1 px-3 py-4 space-y-1">
-        {
-          navItems.map((item) => (
-            <a
-              href={item.href}
-              class={`block px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                currentPath === item.href ? "bg-blue-700 text-white" : "text-blue-100 hover:bg-blue-800"
-              }`}
-            >
-              {item.label}
-            </a>
-          ))
-        }
-      </nav>
-      <div class="px-3 py-4 border-t border-blue-800">
-        <p class="px-3 text-xs text-blue-300 mb-2">
-          {admin?.nama} · {admin?.role}
-        </p>
-        <form action="/api/admin/logout" method="POST">
-          <button type="submit" class="w-full text-left px-3 py-2 rounded-lg text-sm text-red-300 hover:bg-blue-800">
-            Keluar
-          </button>
-        </form>
-      </div>
-    </aside>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>{title}</title>
+  </head>
+  <body class="bg-slate-100 font-sans antialiased">
+    <div class="min-h-screen md:flex">
+      <!-- Sidebar (desktop) -->
+      <aside class="hidden md:flex md:flex-col md:w-64 md:fixed md:inset-y-0 bg-blue-950 text-white">
+        <div class="flex items-center gap-2 px-6 py-5 border-b border-white/10">
+          <img src="/images/logo.png" alt="Yasuki" class="h-8 w-8 rounded-full" />
+          <div>
+            <p class="font-semibold text-sm leading-tight">Yasuki</p>
+            <p class="text-xs text-blue-300 leading-tight">Dashboard Admin</p>
+          </div>
+        </div>
 
-    <div class="flex-1 min-w-0">
-      <header class="md:hidden bg-blue-900 text-white px-4 py-3 flex items-center justify-between">
-        <span class="font-semibold text-sm">Dashboard Admin</span>
+        <nav class="flex-1 px-3 py-4 space-y-1">
+          {
+            navItems.map((item) => {
+              const isActive = currentPath === item.href;
+              return (
+                <a
+                  href={item.href}
+                  class={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                    isActive ? "bg-blue-800 text-white" : "text-blue-200 hover:bg-blue-900 hover:text-white"
+                  }`}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-5 h-5 flex-shrink-0">
+                    <path stroke-linecap="round" stroke-linejoin="round" d={item.icon} />
+                  </svg>
+                  {item.label}
+                </a>
+              );
+            })
+          }
+        </nav>
+
+        <div class="px-4 py-4 border-t border-white/10">
+          <p class="text-xs text-blue-300 mb-2 truncate">
+            {admin?.nama} <span class="text-blue-400">· {admin?.role}</span>
+          </p>
+          <form action="/api/admin/logout" method="POST">
+            <button
+              type="submit"
+              class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-red-300 hover:bg-red-950/60 hover:text-red-200 transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-5 h-5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
+              </svg>
+              Keluar
+            </button>
+          </form>
+        </div>
+      </aside>
+
+      <!-- Topbar (mobile) -->
+      <header class="md:hidden sticky top-0 z-10 bg-blue-950 text-white px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <img src="/images/logo.png" alt="Yasuki" class="h-7 w-7 rounded-full" />
+          <span class="font-semibold text-sm">Dashboard Admin</span>
+        </div>
         <form action="/api/admin/logout" method="POST">
           <button type="submit" class="text-xs text-red-300">Keluar</button>
         </form>
       </header>
-      <main class="p-4 md:p-8">
-        <slot />
-      </main>
+
+      <!-- Nav mobile (baris menu di bawah topbar) -->
+      <nav class="md:hidden flex bg-blue-900 text-white text-sm">
+        {
+          navItems.map((item) => {
+            const isActive = currentPath === item.href;
+            return (
+              <a href={item.href} class={`flex-1 text-center py-2.5 ${isActive ? "bg-blue-800 font-medium" : "text-blue-200"}`}>
+                {item.label}
+              </a>
+            );
+          })
+        }
+      </nav>
+
+      <!-- Konten -->
+      <div class="flex-1 min-w-0 md:ml-64">
+        <main class="p-4 md:p-8">
+          <slot />
+        </main>
+      </div>
     </div>
-  </div>
-</Layout>
+  </body>
+</html>

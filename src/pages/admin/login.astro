@@ -1,91 +1,99 @@
 ---
-import Layout from "../../layouts/Layout.astro";
+import "../../styles/global.css";
 ---
 
-<Layout title="Login Admin — Yasuki">
-  <div class="min-h-screen flex items-center justify-center bg-slate-50 px-4">
-    <div class="w-full max-w-sm bg-white rounded-2xl shadow-md p-8">
-      <div class="text-center mb-6">
-        <img src="/images/logo.png" alt="Yasuki" class="h-12 mx-auto mb-3" />
-        <h1 class="text-xl font-bold text-slate-800">Login Admin</h1>
-        <p class="text-sm text-slate-500">Dashboard Yayasan Sosial Umi Kulsum Indonesia</p>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Login Admin — Yasuki</title>
+  </head>
+  <body class="bg-slate-100 font-sans antialiased">
+    <div class="min-h-screen flex items-center justify-center px-4">
+      <div class="w-full max-w-sm bg-white rounded-2xl shadow-md p-8">
+        <div class="text-center mb-6">
+          <img src="/images/logo.png" alt="Yasuki" class="h-12 mx-auto mb-3" />
+          <h1 class="text-xl font-bold text-slate-800">Login Admin</h1>
+          <p class="text-sm text-slate-500">Dashboard Yayasan Sosial Umi Kulsum Indonesia</p>
+        </div>
+
+        <form id="form-login" class="space-y-4">
+          <div>
+            <label for="email" class="block text-sm font-medium text-slate-700 mb-1">Email</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              required
+              class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-700"
+              placeholder="admin@yasuki.site"
+            />
+          </div>
+          <div>
+            <label for="password" class="block text-sm font-medium text-slate-700 mb-1">Password</label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              required
+              class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-700"
+              placeholder="••••••••"
+            />
+          </div>
+
+          <p id="error-msg" class="text-sm text-red-600 hidden"></p>
+
+          <button
+            type="submit"
+            id="btn-submit"
+            class="w-full bg-blue-800 hover:bg-blue-900 text-white font-semibold py-2.5 rounded-lg transition-colors disabled:opacity-60"
+          >
+            Masuk
+          </button>
+        </form>
       </div>
-
-      <form id="form-login" class="space-y-4">
-        <div>
-          <label for="email" class="block text-sm font-medium text-slate-700 mb-1">Email</label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            required
-            class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-700"
-            placeholder="admin@yasuki.site"
-          />
-        </div>
-        <div>
-          <label for="password" class="block text-sm font-medium text-slate-700 mb-1">Password</label>
-          <input
-            type="password"
-            id="password"
-            name="password"
-            required
-            class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-700"
-            placeholder="••••••••"
-          />
-        </div>
-
-        <p id="error-msg" class="text-sm text-red-600 hidden"></p>
-
-        <button
-          type="submit"
-          id="btn-submit"
-          class="w-full bg-blue-800 hover:bg-blue-900 text-white font-semibold py-2.5 rounded-lg transition-colors disabled:opacity-60"
-        >
-          Masuk
-        </button>
-      </form>
     </div>
-  </div>
-</Layout>
 
-<script>
-  const form = document.getElementById("form-login") as HTMLFormElement;
-  const btnSubmit = document.getElementById("btn-submit") as HTMLButtonElement;
-  const errorMsg = document.getElementById("error-msg") as HTMLParagraphElement;
+    <script>
+      const form = document.getElementById("form-login") as HTMLFormElement;
+      const btnSubmit = document.getElementById("btn-submit") as HTMLButtonElement;
+      const errorMsg = document.getElementById("error-msg") as HTMLParagraphElement;
 
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    errorMsg.classList.add("hidden");
-    btnSubmit.disabled = true;
-    btnSubmit.textContent = "Memproses...";
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        errorMsg.classList.add("hidden");
+        btnSubmit.disabled = true;
+        btnSubmit.textContent = "Memproses...";
 
-    const email = (document.getElementById("email") as HTMLInputElement).value;
-    const password = (document.getElementById("password") as HTMLInputElement).value;
+        const email = (document.getElementById("email") as HTMLInputElement).value;
+        const password = (document.getElementById("password") as HTMLInputElement).value;
 
-    try {
-      const res = await fetch("/api/admin/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        try {
+          const res = await fetch("/api/admin/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password }),
+          });
+
+          const data = (await res.json()) as { error?: string };
+
+          if (!res.ok) {
+            errorMsg.textContent = data.error || "Login gagal";
+            errorMsg.classList.remove("hidden");
+            btnSubmit.disabled = false;
+            btnSubmit.textContent = "Masuk";
+            return;
+          }
+
+          window.location.href = "/admin";
+        } catch {
+          errorMsg.textContent = "Terjadi kesalahan, coba lagi";
+          errorMsg.classList.remove("hidden");
+          btnSubmit.disabled = false;
+          btnSubmit.textContent = "Masuk";
+        }
       });
-
-      const data = (await res.json()) as { error?: string };
-
-      if (!res.ok) {
-        errorMsg.textContent = data.error || "Login gagal";
-        errorMsg.classList.remove("hidden");
-        btnSubmit.disabled = false;
-        btnSubmit.textContent = "Masuk";
-        return;
-      }
-
-      window.location.href = "/admin";
-    } catch {
-      errorMsg.textContent = "Terjadi kesalahan, coba lagi";
-      errorMsg.classList.remove("hidden");
-      btnSubmit.disabled = false;
-      btnSubmit.textContent = "Masuk";
-    }
-  });
-</script>
+    </script>
+  </body>
+</html>
