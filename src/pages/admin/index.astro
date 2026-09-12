@@ -1,0 +1,27 @@
+---
+import Layout from "../../layouts/Layout.astro";
+
+const admin = Astro.locals.admin;
+---
+
+<Layout title="Dashboard Admin — Yasuki">
+  <div class="min-h-screen bg-slate-50 p-8">
+    <div class="max-w-4xl mx-auto">
+      <div class="flex items-center justify-between mb-8">
+        <div>
+          <h1 class="text-2xl font-bold text-slate-800">Dashboard Admin</h1>
+          <p class="text-sm text-slate-500">Halo, {admin?.nama} ({admin?.role})</p>
+        </div>
+        <form action="/api/admin/logout" method="POST">
+          <button type="submit" class="text-sm text-red-600 hover:underline">Keluar</button>
+        </form>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-sm p-6">
+        <p class="text-slate-600">
+          Login berhasil. Halaman ini masih placeholder — menyusul: kelola donasi & kelola berita.
+        </p>
+      </div>
+    </div>
+  </div>
+</Layout>
