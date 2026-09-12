@@ -1,6 +1,6 @@
 import { env } from "cloudflare:workers";
 
-const PUBLIC_R2_URL = "https://pub-31fb1875b1704f9682f558599e8d8a43.r2.dev";
+const PUBLIC_R2_URL = "https://media.yasuki.site";
 
 /** Upload file ke bucket R2, kembalikan URL publiknya. */
 export async function uploadToR2(file: File, folder: string): Promise<string> {
