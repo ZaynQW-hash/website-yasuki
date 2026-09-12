@@ -1,0 +1,176 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import { env } from "cloudflare:workers";
+
+const admin = Astro.locals.admin;
+const statusFilter = Astro.url.searchParams.get("status") || "semua";
+
+interface DonasiRow {
+  id: number;
+  kode_referensi: string;
+  nama: string;
+  whatsapp: string;
+  program: string;
+  nominal: number;
+  pesan: string | null;
+  tampilkan_nama: number;
+  status: string;
+  created_at: string;
+  verified_at: string | null;
+}
+
+const db = env.yasuki_db;
+
+let query =
+  "SELECT id, kode_referensi, nama, whatsapp, program, nominal, pesan, tampilkan_nama, status, created_at, verified_at FROM donasi";
+const bindings: string[] = [];
+
+if (statusFilter !== "semua") {
+  query += " WHERE status = ?";
+  bindings.push(statusFilter);
+}
+
+query += " ORDER BY created_at DESC LIMIT 100";
+
+const stmt = bindings.length ? db.prepare(query).bind(...bindings) : db.prepare(query);
+const { results } = await stmt.all<DonasiRow>();
+
+function formatRupiah(n: number): string {
+  return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(n);
+}
+
+function formatTanggal(iso: string): string {
+  return new Date(iso.replace(" ", "T") + "Z").toLocaleString("id-ID", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+}
+
+const statusBadgeClass: Record<string, string> = {
+  pending: "bg-amber-100 text-amber-800",
+  terverifikasi: "bg-green-100 text-green-800",
+  ditolak: "bg-red-100 text-red-800",
+  kadaluarsa: "bg-slate-200 text-slate-600",
+};
+
+const filters = [
+  { key: "semua", label: "Semua" },
+  { key: "pending", label: "Pending" },
+  { key: "terverifikasi", label: "Terverifikasi" },
+  { key: "ditolak", label: "Ditolak" },
+];
+---
+
+<AdminLayout title="Kelola Donasi — Yasuki" admin={admin}>
+  <div class="max-w-6xl mx-auto">
+    <h1 class="text-2xl font-bold text-slate-800 mb-6">Kelola Donasi</h1>
+
+    <div class="flex flex-wrap gap-2 mb-4">
+      {
+        filters.map((f) => (
+          <a
+            href={`/admin/donasi?status=${f.key}`}
+            class={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+              statusFilter === f.key
+                ? "bg-blue-800 text-white"
+                : "bg-white text-slate-600 border border-slate-300 hover:bg-slate-100"
+            }`}
+          >
+            {f.label}
+          </a>
+        ))
+      }
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-slate-50 text-slate-500 text-left">
+            <tr>
+              <th class="px-4 py-3 font-medium">Tanggal</th>
+              <th class="px-4 py-3 font-medium">Nama</th>
+              <th class="px-4 py-3 font-medium">WhatsApp</th>
+              <th class="px-4 py-3 font-medium">Program</th>
+              <th class="px-4 py-3 font-medium">Nominal</th>
+              <th class="px-4 py-3 font-medium">Kode Ref</th>
+              <th class="px-4 py-3 font-medium">Status</th>
+              <th class="px-4 py-3 font-medium">Aksi</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            {
+              results.length === 0 && (
+                <tr>
+                  <td colspan="8" class="px-4 py-8 text-center text-slate-400">
+                    Belum ada data donasi.
+                  </td>
+                </tr>
+              )
+            }
+            {
+              results.map((d) => (
+                <tr>
+                  <td class="px-4 py-3 whitespace-nowrap text-slate-600">{formatTanggal(d.created_at)}</td>
+                  <td class="px-4 py-3 text-slate-800 font-medium">
+                    {d.nama}
+                    {d.tampilkan_nama === 0 && <span class="text-xs text-slate-400 block">(minta disembunyikan)</span>}
+                  </td>
+                  <td class="px-4 py-3">
+                    <a href={`https://wa.me/${d.whatsapp.replace(/\D/g, "")}`} target="_blank" class="text-blue-700 hover:underline">
+                      {d.whatsapp}
+                    </a>
+                  </td>
+                  <td class="px-4 py-3 text-slate-600">{d.program}</td>
+                  <td class="px-4 py-3 font-semibold text-slate-800">{formatRupiah(d.nominal)}</td>
+                  <td class="px-4 py-3 text-slate-500 font-mono text-xs">{d.kode_referensi}</td>
+                  <td class="px-4 py-3">
+                    <span class={`px-2 py-1 rounded-full text-xs font-medium ${statusBadgeClass[d.status] || "bg-slate-100 text-slate-600"}`}>
+                      {d.status}
+                    </span>
+                  </td>
+                  <td class="px-4 py-3 whitespace-nowrap">
+                    {d.status === "pending" && (
+                      <div class="flex gap-2">
+                        <button class="btn-verify text-xs px-2 py-1 rounded-lg bg-green-600 hover:bg-green-700 text-white" data-id={d.id}>
+                          Verifikasi
+                        </button>
+                        <button class="btn-reject text-xs px-2 py-1 rounded-lg bg-red-100 hover:bg-red-200 text-red-700" data-id={d.id}>
+                          Tolak
+                        </button>
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</AdminLayout>
+
+<script>
+  async function updateStatus(id: string, action: "verify" | "reject") {
+    const res = await fetch(`/api/admin/donasi/${id}/${action}`, { method: "POST" });
+    if (res.ok) {
+      window.location.reload();
+    } else {
+      alert("Gagal memperbarui status, coba lagi.");
+    }
+  }
+
+  document.querySelectorAll(".btn-verify").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const id = (btn as HTMLElement).dataset.id!;
+      if (confirm("Tandai donasi ini sebagai terverifikasi?")) updateStatus(id, "verify");
+    });
+  });
+
+  document.querySelectorAll(".btn-reject").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const id = (btn as HTMLElement).dataset.id!;
+      if (confirm("Tolak donasi ini?")) updateStatus(id, "reject");
+    });
+  });
+</script>

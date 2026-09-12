@@ -4,12 +4,10 @@ import { verifySessionToken, SESSION_COOKIE_NAME } from "./lib/auth";
 export const onRequest = defineMiddleware(async (context, next) => {
   const { url, cookies, redirect } = context;
 
-  const isAdminRoute = url.pathname.startsWith("/admin");
-  const isLoginPage = url.pathname === "/admin/login";
-  const isLoginApi = url.pathname === "/api/admin/login";
+  const isAdminPage = url.pathname.startsWith("/admin") && url.pathname !== "/admin/login";
+  const isAdminApi = url.pathname.startsWith("/api/admin") && url.pathname !== "/api/admin/login";
 
-  // Selain rute /admin/*, atau halaman login itu sendiri, biarkan lewat.
-  if (!isAdminRoute || isLoginPage || isLoginApi) {
+  if (!isAdminPage && !isAdminApi) {
     return next();
   }
 
@@ -17,10 +15,16 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const session = token ? await verifySessionToken(token) : null;
 
   if (!session) {
+    if (isAdminApi) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
     return redirect("/admin/login");
   }
 
-  // Data admin yang lagi login bisa diakses lewat Astro.locals.admin di halaman manapun di bawah /admin/*
+  // Data admin yang lagi login bisa diakses lewat Astro.locals.admin di halaman/API manapun di bawah /admin/*
   context.locals.admin = session;
 
   return next();

@@ -1,0 +1,64 @@
+---
+import Layout from "./Layout.astro";
+import type { SessionPayload } from "../lib/auth";
+
+interface Props {
+  title: string;
+  admin?: SessionPayload;
+}
+
+const { title, admin } = Astro.props;
+const currentPath = Astro.url.pathname;
+
+const navItems = [
+  { href: "/admin", label: "Dashboard" },
+  { href: "/admin/donasi", label: "Donasi" },
+];
+---
+
+<Layout title={title}>
+  <div class="min-h-screen bg-slate-50 flex">
+    <aside class="w-60 bg-blue-900 text-white flex-shrink-0 hidden md:flex md:flex-col">
+      <div class="px-6 py-5 border-b border-blue-800">
+        <img src="/images/logo.png" alt="Yasuki" class="h-8 mb-2 brightness-0 invert" />
+        <p class="text-xs text-blue-200">Dashboard Admin</p>
+      </div>
+      <nav class="flex-1 px-3 py-4 space-y-1">
+        {
+          navItems.map((item) => (
+            <a
+              href={item.href}
+              class={`block px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                currentPath === item.href ? "bg-blue-700 text-white" : "text-blue-100 hover:bg-blue-800"
+              }`}
+            >
+              {item.label}
+            </a>
+          ))
+        }
+      </nav>
+      <div class="px-3 py-4 border-t border-blue-800">
+        <p class="px-3 text-xs text-blue-300 mb-2">
+          {admin?.nama} · {admin?.role}
+        </p>
+        <form action="/api/admin/logout" method="POST">
+          <button type="submit" class="w-full text-left px-3 py-2 rounded-lg text-sm text-red-300 hover:bg-blue-800">
+            Keluar
+          </button>
+        </form>
+      </div>
+    </aside>
+
+    <div class="flex-1 min-w-0">
+      <header class="md:hidden bg-blue-900 text-white px-4 py-3 flex items-center justify-between">
+        <span class="font-semibold text-sm">Dashboard Admin</span>
+        <form action="/api/admin/logout" method="POST">
+          <button type="submit" class="text-xs text-red-300">Keluar</button>
+        </form>
+      </header>
+      <main class="p-4 md:p-8">
+        <slot />
+      </main>
+    </div>
+  </div>
+</Layout>
