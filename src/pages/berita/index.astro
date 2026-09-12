@@ -63,9 +63,9 @@ function formatTanggal(iso: string): string {
               <span class="inline-block bg-amber-50 text-amber-700 text-xs font-medium px-3 py-1 rounded-full mb-3 w-fit">
                 {featured.kategori}
               </span>
-              <h2 class="text-xl md:text-2xl font-bold text-blue-950 mb-2">{featured.judul}</h2>
+              <h2 class="text-xl md:text-2xl font-bold text-blue-950 mb-2 line-clamp-2">{featured.judul}</h2>
               <p class="text-slate-500 text-xs mb-3">{formatTanggal(featured.created_at)}</p>
-              <p class="text-slate-600 text-sm">{featured.ringkasan}</p>
+              <p class="text-slate-600 text-sm line-clamp-3">{featured.ringkasan}</p>
             </div>
           </a>
         )
@@ -91,7 +91,7 @@ function formatTanggal(iso: string): string {
                   <span class="inline-block bg-amber-50 text-amber-700 text-[10px] font-medium px-2.5 py-0.5 rounded-full mb-2 w-fit">
                     {b.kategori}
                   </span>
-                  <h3 class="text-blue-950 font-semibold text-sm mb-1">{b.judul}</h3>
+                  <h3 class="text-blue-950 font-semibold text-sm mb-1 line-clamp-2">{b.judul}</h3>
                   <p class="text-slate-500 text-xs mb-2">{formatTanggal(b.created_at)}</p>
                   <p class="text-slate-600 text-xs line-clamp-3 flex-1">{b.ringkasan}</p>
                 </div>
@@ -147,7 +147,6 @@ function formatTanggal(iso: string): string {
 
     items.forEach((item) => observer.observe(item));
   } else {
-    // fallback kalau browser lama nggak support IntersectionObserver
     items.forEach((item) => item.classList.add("revealed"));
   }
 </script>
