@@ -1,17 +1,26 @@
 {
-  "name": "website-yasuki",
-  "compatibility_date": "2026-09-08",
-  "compatibility_flags": ["nodejs_compat"],
-  "main": "@astrojs/cloudflare/entrypoints/server",
-  "assets": {
-    "directory": "./dist",
-    "binding": "ASSETS"
-  },
-  "d1_databases": [
-    {
-      "binding": "yasuki_db",
-      "database_name": "yasuki-db",
-      "database_id": "0969ad79-d311-40a2-b471-bb4e6ab01968"
-    }
-  ]
+	"name": "website-yasuki",
+	"compatibility_date": "2026-09-08",
+	"compatibility_flags": [
+		"nodejs_compat"
+	],
+	"main": "@astrojs/cloudflare/entrypoints/server",
+	"assets": {
+		"directory": "./dist",
+		"binding": "ASSETS"
+	},
+	"d1_databases": [
+		{
+			"binding": "yasuki_db",
+			"database_name": "yasuki-db",
+			"database_id": "0969ad79-d311-40a2-b471-bb4e6ab01968"
+		}
+	],
+	"r2_buckets": [
+		{
+			"binding": "yasuki_media",
+			"bucket_name": "yasuki-media",
+			"remote": true
+		}
+	]
 }

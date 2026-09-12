@@ -1,0 +1,175 @@
+---
+import AdminLayout from "../../../../layouts/AdminLayout.astro";
+import { env } from "cloudflare:workers";
+
+const admin = Astro.locals.admin;
+const id = Number(Astro.params.id);
+
+interface BeritaDetail {
+  id: number;
+  judul: string;
+  slug: string;
+  kategori: string;
+  ringkasan: string;
+  konten: string;
+  foto: string | null;
+  published: number;
+}
+
+const db = env.yasuki_db;
+const berita = await db
+  .prepare("SELECT id, judul, slug, kategori, ringkasan, konten, foto, published FROM berita WHERE id = ?")
+  .bind(id)
+  .first<BeritaDetail>();
+
+if (!berita) {
+  return Astro.redirect("/admin/berita");
+}
+---
+
+<AdminLayout title={`Edit Berita — ${berita.judul}`} admin={admin}>
+  <div class="max-w-2xl mx-auto">
+    <h1 class="text-2xl font-bold text-slate-800 mb-6">Edit Berita</h1>
+
+    <form id="form-berita" class="bg-white rounded-xl shadow-sm p-6 space-y-5">
+      <div>
+        <label for="judul" class="block text-sm font-medium text-slate-700 mb-1">Judul</label>
+        <input
+          type="text"
+          id="judul"
+          name="judul"
+          required
+          value={berita.judul}
+          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-700"
+        />
+      </div>
+
+      <div>
+        <label for="slug" class="block text-sm font-medium text-slate-700 mb-1">Slug (URL)</label>
+        <input
+          type="text"
+          id="slug"
+          name="slug"
+          required
+          value={berita.slug}
+          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-700"
+        />
+      </div>
+
+      <div>
+        <label for="kategori" class="block text-sm font-medium text-slate-700 mb-1">Kategori</label>
+        <input
+          list="kategori-list"
+          type="text"
+          id="kategori"
+          name="kategori"
+          required
+          value={berita.kategori}
+          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-700"
+        />
+        <datalist id="kategori-list">
+          <option value="Update Pembangunan" />
+          <option value="Kegiatan" />
+          <option value="Pengumuman" />
+          <option value="Donasi" />
+        </datalist>
+      </div>
+
+      <div>
+        <label for="ringkasan" class="block text-sm font-medium text-slate-700 mb-1">Ringkasan</label>
+        <textarea
+          id="ringkasan"
+          name="ringkasan"
+          rows="2"
+          required
+          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-700"
+          set:text={berita.ringkasan}
+        ></textarea>
+      </div>
+
+      <div>
+        <label for="konten" class="block text-sm font-medium text-slate-700 mb-1">Isi Berita</label>
+        <textarea
+          id="konten"
+          name="konten"
+          rows="10"
+          required
+          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-700"
+          set:text={berita.konten}
+        ></textarea>
+      </div>
+
+      <div>
+        <label for="foto" class="block text-sm font-medium text-slate-700 mb-1">Foto</label>
+        {
+          berita.foto && (
+            <div class="mb-2">
+              <img src={berita.foto} alt={berita.judul} class="w-32 h-32 object-cover rounded-lg" />
+              <p class="text-xs text-slate-400 mt-1">Foto saat ini. Upload baru buat ganti, atau biarkan kosong buat tetap pakai ini.</p>
+            </div>
+          )
+        }
+        <input type="file" id="foto" name="foto" accept="image/*" class="w-full text-sm" />
+      </div>
+
+      <div class="flex items-center gap-2">
+        <input type="checkbox" id="published" checked={berita.published === 1} class="rounded border-slate-300" />
+        <label for="published" class="text-sm text-slate-700">Tayangkan</label>
+      </div>
+
+      <p id="error-msg" class="text-sm text-red-600 hidden"></p>
+
+      <div class="flex gap-3">
+        <button
+          type="submit"
+          id="btn-submit"
+          class="bg-blue-800 hover:bg-blue-900 text-white font-medium px-4 py-2 rounded-lg text-sm disabled:opacity-60"
+        >
+          Simpan Perubahan
+        </button>
+        <a href="/admin/berita" class="px-4 py-2 rounded-lg text-sm text-slate-600 hover:bg-slate-100">Batal</a>
+      </div>
+    </form>
+  </div>
+</AdminLayout>
+
+<script define:vars={{ beritaId: berita.id }}>
+  const form = document.getElementById("form-berita");
+  const btnSubmit = document.getElementById("btn-submit");
+  const errorMsg = document.getElementById("error-msg");
+  const publishedCheckbox = document.getElementById("published");
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    errorMsg.classList.add("hidden");
+    btnSubmit.disabled = true;
+    btnSubmit.textContent = "Menyimpan...";
+
+    const formData = new FormData(form);
+    formData.set("published", publishedCheckbox.checked ? "1" : "0");
+
+    try {
+      const res = await fetch(`/api/admin/berita/${beritaId}`, {
+        method: "PUT",
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        errorMsg.textContent = data.error || "Gagal menyimpan perubahan";
+        errorMsg.classList.remove("hidden");
+        btnSubmit.disabled = false;
+        btnSubmit.textContent = "Simpan Perubahan";
+        return;
+      }
+
+      window.location.href = "/admin/berita";
+    } catch {
+      errorMsg.textContent = "Terjadi kesalahan, coba lagi";
+      errorMsg.classList.remove("hidden");
+      btnSubmit.disabled = false;
+      btnSubmit.textContent = "Simpan Perubahan";
+    }
+  });
+</script>

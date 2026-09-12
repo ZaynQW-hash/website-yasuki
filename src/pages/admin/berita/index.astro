@@ -1,0 +1,110 @@
+---
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import { env } from "cloudflare:workers";
+
+const admin = Astro.locals.admin;
+
+interface BeritaRow {
+  id: number;
+  judul: string;
+  slug: string;
+  kategori: string;
+  foto: string | null;
+  published: number;
+  created_at: string;
+}
+
+const db = env.yasuki_db;
+const { results } = await db
+  .prepare("SELECT id, judul, slug, kategori, foto, published, created_at FROM berita ORDER BY created_at DESC")
+  .all<BeritaRow>();
+
+function formatTanggal(iso: string): string {
+  return new Date(iso.replace(" ", "T") + "Z").toLocaleDateString("id-ID", { dateStyle: "medium" });
+}
+---
+
+<AdminLayout title="Kelola Berita — Yasuki" admin={admin}>
+  <div class="max-w-6xl mx-auto">
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-2xl font-bold text-slate-800">Kelola Berita</h1>
+      <a href="/admin/berita/tambah" class="bg-blue-800 hover:bg-blue-900 text-white text-sm font-medium px-4 py-2 rounded-lg">
+        + Tambah Berita
+      </a>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-slate-50 text-slate-500 text-left">
+            <tr>
+              <th class="px-4 py-3 font-medium">Foto</th>
+              <th class="px-4 py-3 font-medium">Judul</th>
+              <th class="px-4 py-3 font-medium">Kategori</th>
+              <th class="px-4 py-3 font-medium">Tanggal</th>
+              <th class="px-4 py-3 font-medium">Status</th>
+              <th class="px-4 py-3 font-medium">Aksi</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            {
+              results.length === 0 && (
+                <tr>
+                  <td colspan="6" class="px-4 py-8 text-center text-slate-400">
+                    Belum ada berita.
+                  </td>
+                </tr>
+              )
+            }
+            {
+              results.map((b) => (
+                <tr>
+                  <td class="px-4 py-3">
+                    {b.foto ? (
+                      <img src={b.foto} alt={b.judul} class="w-14 h-14 object-cover rounded-lg" />
+                    ) : (
+                      <div class="w-14 h-14 bg-slate-100 rounded-lg" />
+                    )}
+                  </td>
+                  <td class="px-4 py-3 text-slate-800 font-medium max-w-xs truncate">{b.judul}</td>
+                  <td class="px-4 py-3 text-slate-600">{b.kategori}</td>
+                  <td class="px-4 py-3 text-slate-600 whitespace-nowrap">{formatTanggal(b.created_at)}</td>
+                  <td class="px-4 py-3">
+                    <span class={`px-2 py-1 rounded-full text-xs font-medium ${b.published ? "bg-green-100 text-green-800" : "bg-slate-200 text-slate-600"}`}>
+                      {b.published ? "Tayang" : "Draft"}
+                    </span>
+                  </td>
+                  <td class="px-4 py-3 whitespace-nowrap">
+                    <div class="flex gap-2">
+                      <a href={`/admin/berita/${b.id}/edit`} class="text-xs px-2 py-1 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-700">
+                        Edit
+                      </a>
+                      <button class="btn-hapus text-xs px-2 py-1 rounded-lg bg-red-100 hover:bg-red-200 text-red-700" data-id={b.id}>
+                        Hapus
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</AdminLayout>
+
+<script>
+  document.querySelectorAll(".btn-hapus").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const id = (btn as HTMLElement).dataset.id;
+      if (!confirm("Hapus berita ini? Tindakan tidak bisa dibatalkan.")) return;
+      const res = await fetch(`/api/admin/berita/${id}`, { method: "DELETE" });
+      if (res.ok) {
+        window.location.reload();
+      } else {
+        alert("Gagal menghapus berita.");
+      }
+    });
+  });
+</script>
