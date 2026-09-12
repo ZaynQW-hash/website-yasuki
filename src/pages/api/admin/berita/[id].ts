@@ -29,6 +29,7 @@ export const PUT: APIRoute = async ({ params, request }) => {
     const judul = String(formData.get("judul") || "").trim();
     const slug = String(formData.get("slug") || "").trim();
     const kategori = String(formData.get("kategori") || "").trim();
+    const penulis = String(formData.get("penulis") || "").trim();
     const ringkasan = String(formData.get("ringkasan") || "").trim();
     const konten = String(formData.get("konten") || "").trim();
     const published = formData.get("published") === "1" ? 1 : 0;
@@ -52,9 +53,9 @@ export const PUT: APIRoute = async ({ params, request }) => {
 
     await db
       .prepare(
-        "UPDATE berita SET judul = ?, slug = ?, kategori = ?, ringkasan = ?, konten = ?, foto = ?, published = ? WHERE id = ?",
+        "UPDATE berita SET judul = ?, slug = ?, kategori = ?, penulis = ?, ringkasan = ?, konten = ?, foto = ?, published = ? WHERE id = ?",
       )
-      .bind(judul, slug, kategori, ringkasan, konten, fotoUrl, published, id)
+      .bind(judul, slug, kategori, penulis || null, ringkasan, konten, fotoUrl, published, id)
       .run();
 
     return new Response(JSON.stringify({ success: true }), {

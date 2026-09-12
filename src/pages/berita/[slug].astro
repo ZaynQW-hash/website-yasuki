@@ -11,6 +11,7 @@ interface BeritaDetail {
   judul: string;
   slug: string;
   kategori: string;
+  penulis: string | null;
   ringkasan: string;
   konten: string;
   foto: string | null;
@@ -20,7 +21,7 @@ interface BeritaDetail {
 
 const db = env.yasuki_db;
 const berita = await db
-  .prepare("SELECT id, judul, slug, kategori, ringkasan, konten, foto, published, created_at FROM berita WHERE slug = ?")
+  .prepare("SELECT id, judul, slug, kategori, penulis, ringkasan, konten, foto, published, created_at FROM berita WHERE slug = ?")
   .bind(slug)
   .first<BeritaDetail>();
 
@@ -44,30 +45,26 @@ const kontenHtml = renderKontenBerita(berita.konten);
 
   <section class="px-6 pt-8 pb-16 bg-white">
     <div class="max-w-2xl mx-auto">
+      <!-- Kategori -->
+      <span class="inline-block bg-amber-50 text-amber-700 text-xs font-semibold px-3 py-1 rounded-full mb-4 fade-in-up">
+        {berita.kategori}
+      </span>
+
       <!-- Foto -->
-      {
-        berita.foto && (
-          <div class="relative mb-6 fade-in-up">
-            <img src={berita.foto} alt={berita.judul} class="w-full rounded-xl" />
-            <span class="absolute top-3 left-3 bg-amber-400 text-slate-900 text-xs font-semibold px-3 py-1 rounded-full shadow">
-              {berita.kategori}
-            </span>
-          </div>
-        )
-      }
-      {
-        !berita.foto && (
-          <span class="inline-block bg-amber-50 text-amber-700 text-xs font-semibold px-3 py-1 rounded-full mb-4 fade-in-up">
-            {berita.kategori}
-          </span>
-        )
-      }
+      {berita.foto && <img src={berita.foto} alt={berita.judul} class="w-full rounded-xl mb-6 fade-in-up" />}
 
       <!-- Judul -->
       <h1 class="text-2xl md:text-3xl font-bold text-blue-950 mb-3 leading-tight fade-in-up">{berita.judul}</h1>
 
-      <!-- Tanggal -->
-      <p class="text-slate-500 text-sm mb-8 fade-in-up">{formatTanggal(berita.created_at)}</p>
+      <!-- Tanggal (+ nama pengupload kalau ada) -->
+      <p class="text-slate-500 text-sm mb-8 fade-in-up">
+        {berita.penulis && (
+          <>
+            Oleh <span class="font-medium text-slate-600">{berita.penulis}</span> ·{" "}
+          </>
+        )}
+        {formatTanggal(berita.created_at)}
+      </p>
 
       <article class="artikel-konten text-slate-700 fade-in-up fade-in-delay" set:html={kontenHtml} />
 

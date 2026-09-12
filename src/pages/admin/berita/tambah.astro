@@ -47,6 +47,17 @@ const admin = Astro.locals.admin;
       </div>
 
       <div>
+        <label for="penulis" class="block text-sm font-medium text-slate-700 mb-1">Nama Pengupload</label>
+        <input
+          type="text"
+          id="penulis"
+          name="penulis"
+          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-700"
+          placeholder="Nama yang menulis berita ini (opsional)"
+        />
+      </div>
+
+      <div>
         <label for="ringkasan" class="block text-sm font-medium text-slate-700 mb-1">Ringkasan</label>
         <textarea
           id="ringkasan"
@@ -59,16 +70,25 @@ const admin = Astro.locals.admin;
       </div>
 
       <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Foto Sampul</label>
+        <div id="foto-sampul-preview-wrapper" class="hidden mb-2">
+          <img id="foto-sampul-preview" alt="Preview foto sampul" class="w-full h-40 object-cover rounded-lg border border-slate-200" />
+        </div>
+        <label
+          for="foto"
+          class="flex items-center justify-center gap-2 border-2 border-dashed border-slate-300 rounded-lg py-6 px-4 cursor-pointer hover:border-blue-400 hover:bg-blue-50/50 transition text-sm text-slate-500 text-center"
+        >
+          <span id="foto-label-text">Klik untuk pilih foto sampul</span>
+        </label>
+        <input type="file" id="foto" name="foto" accept="image/*" class="hidden" />
+        <p class="text-xs text-slate-400 mt-1">Ini foto utama yang muncul di kartu daftar berita & halaman detail (beda dari foto yang disisip di isi berita).</p>
+      </div>
+
+      <div>
         <label class="block text-sm font-medium text-slate-700 mb-1">Isi Berita</label>
         <div id="editor-konten" class="bg-white rounded-lg border border-slate-300"></div>
         <textarea id="konten" name="konten" class="hidden"></textarea>
         <p class="text-xs text-slate-400 mt-1">Pakai toolbar buat bold, heading, list, link, dan tombol gambar buat sisip foto langsung di teks.</p>
-      </div>
-
-      <div>
-        <label for="foto" class="block text-sm font-medium text-slate-700 mb-1">Foto Sampul</label>
-        <input type="file" id="foto" name="foto" accept="image/*" class="w-full text-sm" />
-        <p class="text-xs text-slate-400 mt-1">Ini foto utama yang muncul di kartu daftar berita (beda dari foto yang disisip di isi berita).</p>
       </div>
 
       <div class="flex items-center gap-2">
@@ -124,6 +144,28 @@ const admin = Astro.locals.admin;
     if (!slugManuallyEdited) {
       slugInput.value = slugify(judulInput.value);
     }
+  });
+
+  // --- Preview foto sampul ---
+  var fotoInput = document.getElementById("foto");
+  var fotoPreviewWrapper = document.getElementById("foto-sampul-preview-wrapper");
+  var fotoPreviewImg = document.getElementById("foto-sampul-preview");
+  var fotoLabelText = document.getElementById("foto-label-text");
+
+  fotoInput.addEventListener("change", function () {
+    var file = fotoInput.files && fotoInput.files[0];
+    if (!file) {
+      fotoPreviewWrapper.classList.add("hidden");
+      fotoLabelText.textContent = "Klik untuk pilih foto sampul";
+      return;
+    }
+    fotoLabelText.textContent = file.name;
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      fotoPreviewImg.src = e.target.result;
+      fotoPreviewWrapper.classList.remove("hidden");
+    };
+    reader.readAsDataURL(file);
   });
 
   // --- Rich text editor ---

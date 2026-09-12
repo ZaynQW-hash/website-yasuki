@@ -9,6 +9,7 @@ export const POST: APIRoute = async ({ request }) => {
     const judul = String(formData.get("judul") || "").trim();
     const slug = String(formData.get("slug") || "").trim();
     const kategori = String(formData.get("kategori") || "").trim();
+    const penulis = String(formData.get("penulis") || "").trim();
     const ringkasan = String(formData.get("ringkasan") || "").trim();
     const konten = String(formData.get("konten") || "").trim();
     const published = formData.get("published") === "1" ? 1 : 0;
@@ -29,9 +30,9 @@ export const POST: APIRoute = async ({ request }) => {
     const db = env.yasuki_db;
     await db
       .prepare(
-        "INSERT INTO berita (judul, slug, kategori, ringkasan, konten, foto, published) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        "INSERT INTO berita (judul, slug, kategori, penulis, ringkasan, konten, foto, published) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
       )
-      .bind(judul, slug, kategori, ringkasan, konten, fotoUrl, published)
+      .bind(judul, slug, kategori, penulis || null, ringkasan, konten, fotoUrl, published)
       .run();
 
     return new Response(JSON.stringify({ success: true }), {
