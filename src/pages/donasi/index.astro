@@ -30,7 +30,7 @@ const programCards = programRows.map((p) => {
     kategori: p.kategori,
     headline: p.headline,
     foto: p.foto,
-    href: p.href_custom || `/program#${p.slug}`,
+    href: p.href_custom || `/program/${p.slug}`,
     external: !!p.href_custom && !!p.href_external,
     terkumpul: showProgress ? `Rp${p.terkumpul!.toLocaleString("id-ID")}` : null,
     target: p.target,

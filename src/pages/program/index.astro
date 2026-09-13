@@ -27,15 +27,33 @@ const unggulan = unggulanRows.map((p) => ({
   kategori: p.kategori,
   deskripsi: p.deskripsi,
   foto: p.foto,
-  href: p.href_custom || `/program#${p.slug}`,
+  href: p.href_custom || `/program/${p.slug}`,
   external: !!p.href_custom && !!p.href_external,
 }));
 
-const { results: lainnya } = await db
+interface ProgramLainnyaRow {
+  nama: string;
+  slug: string;
+  kategori: string;
+  foto: string | null;
+  href_custom: string | null;
+  href_external: number;
+}
+
+const { results: lainnyaRows } = await db
   .prepare(
-    "SELECT nama, slug, kategori, foto FROM program WHERE status = 1 AND unggulan = 0 ORDER BY urutan ASC, id ASC",
+    "SELECT nama, slug, kategori, foto, href_custom, href_external FROM program WHERE status = 1 AND unggulan = 0 ORDER BY urutan ASC, id ASC",
   )
-  .all<{ nama: string; slug: string; kategori: string; foto: string | null }>();
+  .all<ProgramLainnyaRow>();
+
+const lainnya = lainnyaRows.map((p) => ({
+  nama: p.nama,
+  slug: p.slug,
+  kategori: p.kategori,
+  foto: p.foto,
+  href: p.href_custom || `/program/${p.slug}`,
+  external: !!p.href_custom && !!p.href_external,
+}));
 ---
 <Layout title="Program Kami — Yasuki">
   <section class="relative pt-24 pb-16 px-6 text-center overflow-hidden">
@@ -60,7 +78,7 @@ const { results: lainnya } = await db
       </div>
       <div class="grid md:grid-cols-2 gap-6">
         {unggulan.map((p) => (
-          <div id={p.slug} class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm flex flex-col scroll-mt-24">
+          <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm flex flex-col">
             <div class="h-48 relative">
               {p.foto ? (
                 <img src={p.foto} alt={p.nama} class="w-full h-full object-cover" />
@@ -97,9 +115,13 @@ const { results: lainnya } = await db
       </div>
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
         {lainnya.map((p) => (
-          <div id={p.slug} class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm scroll-mt-24">
-            <div class="h-28 bg-slate-100">
-              {p.foto && <img src={p.foto} alt={p.nama} class="w-full h-full object-cover" />}
+          <a
+            href={p.href}
+            target={p.external ? "_blank" : undefined}
+            class="group bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition block"
+          >
+            <div class="h-28 bg-slate-100 overflow-hidden">
+              {p.foto && <img src={p.foto} alt={p.nama} class="w-full h-full object-cover group-hover:scale-105 transition duration-500" />}
             </div>
             <div class="p-3 text-center">
               <span class="inline-block bg-amber-50 text-amber-700 text-[10px] font-medium px-2 py-0.5 rounded-full mb-1.5">
@@ -107,7 +129,7 @@ const { results: lainnya } = await db
               </span>
               <h3 class="text-blue-950 font-semibold text-sm">{p.nama}</h3>
             </div>
-          </div>
+          </a>
         ))}
       </div>
     </div>

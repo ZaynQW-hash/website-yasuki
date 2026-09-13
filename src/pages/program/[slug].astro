@@ -1,0 +1,164 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Breadcrumb from '../../components/Breadcrumb.astro';
+import { env } from "cloudflare:workers";
+import { renderKontenBerita } from "../../lib/format-konten";
+
+const { slug } = Astro.params;
+
+interface ProgramDetail {
+  id: number;
+  nama: string;
+  slug: string;
+  kategori: string;
+  headline: string;
+  deskripsi: string | null;
+  konten: string | null;
+  foto: string | null;
+  target: number | null;
+  terkumpul: number | null;
+  tampilkan_progress: number;
+  status: number;
+}
+
+const db = env.yasuki_db;
+const program = await db
+  .prepare(
+    "SELECT id, nama, slug, kategori, headline, deskripsi, konten, foto, target, terkumpul, tampilkan_progress, status FROM program WHERE slug = ?",
+  )
+  .bind(slug)
+  .first<ProgramDetail>();
+
+if (!program || program.status !== 1) {
+  return Astro.redirect("/program");
+}
+
+const showProgress = !!program.tampilkan_progress && !!program.target && program.target > 0 && program.terkumpul !== null;
+const persen = showProgress ? Math.min(100, Math.round((program.terkumpul! / program.target!) * 100)) : null;
+
+// Kalau belum ada Isi Lengkap diisi dari admin, tampilkan headline/deskripsi apa adanya sebagai gantinya.
+const kontenHtml = program.konten
+  ? renderKontenBerita(program.konten)
+  : `<p class="mb-4 leading-relaxed">${program.deskripsi || program.headline}</p>`;
+---
+<Layout title={`${program.nama} — Yasuki`}>
+  <!-- Strip breadcrumb -->
+  <section class="pt-24 pb-6 px-6 bg-blue-950">
+    <div class="max-w-2xl mx-auto">
+      <Breadcrumb items={[{ label: "Beranda", href: "/" }, { label: "Program", href: "/program" }, { label: program.nama }]} />
+    </div>
+  </section>
+
+  <section class="px-6 pt-8 pb-16 bg-white">
+    <div class="max-w-2xl mx-auto">
+      <!-- Kategori -->
+      <span class="inline-block bg-amber-50 text-amber-700 text-xs font-semibold px-3 py-1 rounded-full mb-4 fade-in-up">
+        {program.kategori}
+      </span>
+
+      <!-- Foto -->
+      {program.foto && <img src={program.foto} alt={program.nama} class="w-full rounded-xl mb-6 fade-in-up" />}
+
+      <!-- Judul -->
+      <h1 class="text-2xl md:text-3xl font-bold text-blue-950 mb-3 leading-tight fade-in-up">{program.nama}</h1>
+      <p class="text-slate-500 text-sm mb-6 fade-in-up">{program.headline}</p>
+
+      <!-- Progress donasi (kalau diaktifkan admin) -->
+      {showProgress && (
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-8 fade-in-up">
+          <div class="w-full bg-slate-200 rounded-full h-2 mb-2">
+            <div class="bg-amber-400 h-2 rounded-full" style={`width: ${persen}%`}></div>
+          </div>
+          <div class="flex justify-between text-sm">
+            <span class="text-slate-700 font-semibold">Rp{program.terkumpul!.toLocaleString("id-ID")} terkumpul</span>
+            <span class="text-slate-400">dari target Rp{program.target!.toLocaleString("id-ID")}</span>
+          </div>
+        </div>
+      )}
+
+      <article class="artikel-konten text-slate-700 fade-in-up fade-in-delay" set:html={kontenHtml} />
+
+      <div class="mt-10 pt-6 border-t border-slate-200">
+        <a href="/program" class="text-blue-700 font-medium text-sm hover:underline">← Kembali ke semua program</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Penutup -->
+  <section class="px-6 py-16 bg-gradient-to-br from-amber-400 to-amber-500 text-center">
+    <h2 class="text-xl md:text-2xl font-bold text-slate-900 mb-3">Dukung Program Ini</h2>
+    <p class="text-slate-800 max-w-md mx-auto mb-6">
+      Kontribusi kamu, besar maupun kecil, langsung berdampak bagi mereka yang membutuhkan.
+    </p>
+    <a href="/donasi" class="inline-block bg-slate-900 text-white px-8 py-3 rounded-lg font-semibold hover:bg-slate-800 transition">
+      Donasi Sekarang
+    </a>
+  </section>
+</Layout>
+
+<style>
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .fade-in-up {
+    animation: fadeInUp 0.6s ease-out both;
+  }
+  .fade-in-delay {
+    animation-delay: 0.15s;
+  }
+
+  .artikel-konten :global(h2) {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #172554;
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+  }
+  .artikel-konten :global(h3) {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #172554;
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+  .artikel-konten :global(p) {
+    margin-bottom: 1rem;
+    line-height: 1.75;
+  }
+  .artikel-konten :global(ul),
+  .artikel-konten :global(ol) {
+    margin: 1rem 0 1rem 1.5rem;
+  }
+  .artikel-konten :global(ul) {
+    list-style: disc;
+  }
+  .artikel-konten :global(ol) {
+    list-style: decimal;
+  }
+  .artikel-konten :global(li) {
+    margin-bottom: 0.5rem;
+  }
+  .artikel-konten :global(blockquote) {
+    border-left: 4px solid #fbbf24;
+    padding-left: 1rem;
+    font-style: italic;
+    color: #475569;
+    margin: 1.5rem 0;
+  }
+  .artikel-konten :global(a) {
+    color: #1d4ed8;
+    text-decoration: underline;
+  }
+  .artikel-konten :global(img) {
+    border-radius: 0.75rem;
+    margin: 1.5rem 0;
+    width: 100%;
+  }
+</style>

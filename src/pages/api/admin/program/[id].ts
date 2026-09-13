@@ -31,6 +31,7 @@ export const PUT: APIRoute = async ({ params, request }) => {
     const kategori = String(formData.get("kategori") || "").trim();
     const headline = String(formData.get("headline") || "").trim();
     const deskripsi = String(formData.get("deskripsi") || "").trim();
+    const konten = String(formData.get("konten") || "").trim();
     const hrefCustom = String(formData.get("href_custom") || "").trim();
     const hrefExternal = formData.get("href_external") === "1" ? 1 : 0;
     const unggulan = formData.get("unggulan") === "1" ? 1 : 0;
@@ -62,7 +63,7 @@ export const PUT: APIRoute = async ({ params, request }) => {
     await db
       .prepare(
         `UPDATE program SET
-          nama = ?, slug = ?, kategori = ?, headline = ?, deskripsi = ?, foto = ?,
+          nama = ?, slug = ?, kategori = ?, headline = ?, deskripsi = ?, konten = ?, foto = ?,
           href_custom = ?, href_external = ?, unggulan = ?, target = ?, terkumpul = ?,
           tampilkan_progress = ?, status = ?
          WHERE id = ?`,
@@ -73,6 +74,7 @@ export const PUT: APIRoute = async ({ params, request }) => {
         kategori,
         headline,
         deskripsi || null,
+        konten || null,
         fotoUrl,
         hrefCustom || null,
         hrefExternal,
