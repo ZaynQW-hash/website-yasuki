@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
 import { env } from "cloudflare:workers";
 import { hashPassword } from "../../../../lib/auth";
+import { MODUL_ADMIN } from "../../../../lib/modul-admin";
 
 export const PUT: APIRoute = async ({ params, request, locals }) => {
   const session = locals.admin;
@@ -31,6 +32,10 @@ export const PUT: APIRoute = async ({ params, request, locals }) => {
     const role = isSelf ? session.role : body.role === "superadmin" ? "superadmin" : "admin";
     const aktif = isSelf ? 1 : body.aktif === false ? 0 : 1;
 
+    const validModulKeys = MODUL_ADMIN.map((m) => m.key);
+    const aksesArray = Array.isArray(body.akses) ? body.akses.filter((a: string) => validModulKeys.includes(a)) : [];
+    const akses = role === "superadmin" ? validModulKeys.join(",") : aksesArray.join(",");
+
     if (!nama || !email) {
       return new Response(JSON.stringify({ error: "Nama dan email wajib diisi" }), {
         status: 400,
@@ -50,13 +55,13 @@ export const PUT: APIRoute = async ({ params, request, locals }) => {
     if (password) {
       const passwordHash = await hashPassword(password);
       await db
-        .prepare("UPDATE admin_users SET nama = ?, email = ?, password_hash = ?, role = ?, aktif = ? WHERE id = ?")
-        .bind(nama, email, passwordHash, role, aktif, id)
+        .prepare("UPDATE admin_users SET nama = ?, email = ?, password_hash = ?, role = ?, aktif = ?, akses = ? WHERE id = ?")
+        .bind(nama, email, passwordHash, role, aktif, akses, id)
         .run();
     } else {
       await db
-        .prepare("UPDATE admin_users SET nama = ?, email = ?, role = ?, aktif = ? WHERE id = ?")
-        .bind(nama, email, role, aktif, id)
+        .prepare("UPDATE admin_users SET nama = ?, email = ?, role = ?, aktif = ?, akses = ? WHERE id = ?")
+        .bind(nama, email, role, aktif, akses, id)
         .run();
     }
 

@@ -29,7 +29,7 @@ async function pbkdf2(password: string, salt: Uint8Array): Promise<ArrayBuffer> 
   );
 }
 
-/** Dipakai kalau nanti butuh bikin/ganti password langsung dari kode (jarang dipakai; seed pakai scripts/seed-admin.mjs). */
+/** Dipakai kalau nanti butuh bikin/ganti password langsung dari kode. */
 export async function hashPassword(password: string): Promise<string> {
   const salt = crypto.getRandomValues(new Uint8Array(16));
   const hash = await pbkdf2(password, salt);
@@ -54,6 +54,8 @@ export interface SessionPayload {
   email: string;
   nama: string;
   role: string;
+  /** Daftar modul yang boleh diakses (diabaikan kalau role superadmin, karena selalu penuh). */
+  akses: string[];
   exp: number;
 }
 
@@ -103,4 +105,11 @@ export async function verifySessionToken(token: string): Promise<SessionPayload 
   } catch {
     return null;
   }
+}
+
+/** Cek apakah session ini boleh akses modul tertentu. Superadmin selalu boleh, "pengguna" cuma boleh superadmin. */
+export function bolehAksesModul(session: SessionPayload, modul: string): boolean {
+  if (session.role === "superadmin") return true;
+  if (modul === "pengguna") return false;
+  return session.akses.includes(modul);
 }

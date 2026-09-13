@@ -1,9 +1,14 @@
 ---
 import AdminLayout from "../../layouts/AdminLayout.astro";
 import { env } from "cloudflare:workers";
+import { bolehAksesModul } from "../../lib/auth";
 
 const admin = Astro.locals.admin;
 const db = env.yasuki_db;
+
+const bisaDonasi = admin ? bolehAksesModul(admin, "donasi") : false;
+const bisaBerita = admin ? bolehAksesModul(admin, "berita") : false;
+const bisaProgram = admin ? bolehAksesModul(admin, "program") : false;
 
 interface CountRow {
   jumlah: number;
@@ -21,18 +26,22 @@ interface DonasiPendingRow {
 }
 
 const [pendingCount, terverifikasiBulanIni, beritaTayangCount, beritaDraftCount, programCount, donasiPending] = await Promise.all([
-  db.prepare("SELECT COUNT(*) as jumlah FROM donasi WHERE status = 'pending'").first<CountRow>(),
-  db
-    .prepare(
-      "SELECT COALESCE(SUM(nominal), 0) as total FROM donasi WHERE status = 'terverifikasi' AND strftime('%Y-%m', created_at) = strftime('%Y-%m', 'now')",
-    )
-    .first<TotalRow>(),
-  db.prepare("SELECT COUNT(*) as jumlah FROM berita WHERE published = 1").first<CountRow>(),
-  db.prepare("SELECT COUNT(*) as jumlah FROM berita WHERE published = 0").first<CountRow>(),
-  db.prepare("SELECT COUNT(*) as jumlah FROM program WHERE status = 1").first<CountRow>(),
-  db
-    .prepare("SELECT id, nama, program, nominal, kode_referensi, created_at FROM donasi WHERE status = 'pending' ORDER BY created_at DESC LIMIT 5")
-    .all<DonasiPendingRow>(),
+  bisaDonasi ? db.prepare("SELECT COUNT(*) as jumlah FROM donasi WHERE status = 'pending'").first<CountRow>() : null,
+  bisaDonasi
+    ? db
+        .prepare(
+          "SELECT COALESCE(SUM(nominal), 0) as total FROM donasi WHERE status = 'terverifikasi' AND strftime('%Y-%m', created_at) = strftime('%Y-%m', 'now')",
+        )
+        .first<TotalRow>()
+    : null,
+  bisaBerita ? db.prepare("SELECT COUNT(*) as jumlah FROM berita WHERE published = 1").first<CountRow>() : null,
+  bisaBerita ? db.prepare("SELECT COUNT(*) as jumlah FROM berita WHERE published = 0").first<CountRow>() : null,
+  bisaProgram ? db.prepare("SELECT COUNT(*) as jumlah FROM program WHERE status = 1").first<CountRow>() : null,
+  bisaDonasi
+    ? db
+        .prepare("SELECT id, nama, program, nominal, kode_referensi, created_at FROM donasi WHERE status = 'pending' ORDER BY created_at DESC LIMIT 5")
+        .all<DonasiPendingRow>()
+    : null,
 ]);
 
 function formatRupiah(n: number): string {
@@ -44,37 +53,37 @@ function formatTanggal(iso: string): string {
 }
 
 const stats = [
-  {
+  bisaDonasi && {
     label: "Donasi Perlu Diverifikasi",
     value: String(pendingCount?.jumlah ?? 0),
     href: "/admin/donasi?status=pending",
     accent: pendingCount && pendingCount.jumlah > 0 ? "text-amber-600" : "text-slate-800",
   },
-  {
+  bisaDonasi && {
     label: "Terverifikasi Bulan Ini",
     value: formatRupiah(terverifikasiBulanIni?.total ?? 0),
     href: "/admin/donasi?status=terverifikasi",
     accent: "text-emerald-600",
   },
-  {
+  bisaBerita && {
     label: "Berita Tayang",
     value: String(beritaTayangCount?.jumlah ?? 0),
     href: "/admin/berita",
     accent: "text-blue-800",
   },
-  {
+  bisaBerita && {
     label: "Berita Draft",
     value: String(beritaDraftCount?.jumlah ?? 0),
     href: "/admin/berita",
     accent: beritaDraftCount && beritaDraftCount.jumlah > 0 ? "text-amber-600" : "text-slate-800",
   },
-  {
+  bisaProgram && {
     label: "Program Aktif",
     value: String(programCount?.jumlah ?? 0),
     href: "/admin/program",
     accent: "text-blue-800",
   },
-];
+].filter(Boolean) as { label: string; value: string; href: string; accent: string }[];
 ---
 
 <AdminLayout title="Dashboard Admin — Yasuki" admin={admin}>
@@ -84,54 +93,64 @@ const stats = [
       Halo, <strong>{admin?.nama}</strong> ({admin?.role})
     </p>
 
-    <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-      {
-        stats.map((s) => (
-          <a href={s.href} class="bg-white rounded-xl shadow-sm p-4 hover:shadow-md transition-shadow">
-            <p class="text-slate-500 text-xs mb-1">{s.label}</p>
-            <p class={`text-lg font-bold ${s.accent}`}>{s.value}</p>
-          </a>
-        ))
-      }
-    </div>
+    {
+      stats.length === 0 && (
+        <div class="bg-white rounded-xl shadow-sm p-6 text-slate-500 text-sm">
+          Kamu belum punya akses ke modul manapun. Hubungi superadmin kalau ini keliru.
+        </div>
+      )
+    }
 
-    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-      <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100">
-        <h2 class="text-sm font-semibold text-slate-700">Donasi Perlu Diverifikasi</h2>
-        <a href="/admin/donasi?status=pending" class="text-xs text-blue-700 font-medium hover:underline">
-          Lihat semua →
-        </a>
-      </div>
+    {
+      stats.length > 0 && (
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+          {stats.map((s) => (
+            <a href={s.href} class="bg-white rounded-xl shadow-sm p-4 hover:shadow-md transition-shadow">
+              <p class="text-slate-500 text-xs mb-1">{s.label}</p>
+              <p class={`text-lg font-bold ${s.accent}`}>{s.value}</p>
+            </a>
+          ))}
+        </div>
+      )
+    }
 
-      {
-        donasiPending.results.length === 0 && (
-          <p class="px-5 py-8 text-center text-slate-400 text-sm">Semua donasi udah terverifikasi. 🎉</p>
-        )
-      }
-
-      {
-        donasiPending.results.length > 0 && (
-          <div class="divide-y divide-slate-100">
-            {donasiPending.results.map((d) => (
-              <div class="flex items-center justify-between px-5 py-3">
-                <div class="min-w-0">
-                  <p class="text-slate-800 text-sm font-medium truncate">{d.nama}</p>
-                  <p class="text-slate-400 text-xs">
-                    {d.program} · {formatTanggal(d.created_at)} · {d.kode_referensi}
-                  </p>
-                </div>
-                <div class="flex items-center gap-3 flex-shrink-0 ml-3">
-                  <span class="text-slate-700 text-sm font-semibold whitespace-nowrap">{formatRupiah(d.nominal)}</span>
-                  <button class="btn-verify text-xs px-2 py-1 rounded-lg bg-green-600 hover:bg-green-700 text-white" data-id={d.id}>
-                    Verifikasi
-                  </button>
-                </div>
-              </div>
-            ))}
+    {
+      bisaDonasi && (
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+          <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+            <h2 class="text-sm font-semibold text-slate-700">Donasi Perlu Diverifikasi</h2>
+            <a href="/admin/donasi?status=pending" class="text-xs text-blue-700 font-medium hover:underline">
+              Lihat semua →
+            </a>
           </div>
-        )
-      }
-    </div>
+
+          {(!donasiPending || donasiPending.results.length === 0) && (
+            <p class="px-5 py-8 text-center text-slate-400 text-sm">Semua donasi udah terverifikasi. 🎉</p>
+          )}
+
+          {donasiPending && donasiPending.results.length > 0 && (
+            <div class="divide-y divide-slate-100">
+              {donasiPending.results.map((d) => (
+                <div class="flex items-center justify-between px-5 py-3">
+                  <div class="min-w-0">
+                    <p class="text-slate-800 text-sm font-medium truncate">{d.nama}</p>
+                    <p class="text-slate-400 text-xs">
+                      {d.program} · {formatTanggal(d.created_at)} · {d.kode_referensi}
+                    </p>
+                  </div>
+                  <div class="flex items-center gap-3 flex-shrink-0 ml-3">
+                    <span class="text-slate-700 text-sm font-semibold whitespace-nowrap">{formatRupiah(d.nominal)}</span>
+                    <button class="btn-verify text-xs px-2 py-1 rounded-lg bg-green-600 hover:bg-green-700 text-white" data-id={d.id}>
+                      Verifikasi
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )
+    }
   </div>
 </AdminLayout>
 

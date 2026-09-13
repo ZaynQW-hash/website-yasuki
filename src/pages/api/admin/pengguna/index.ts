@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
 import { env } from "cloudflare:workers";
 import { hashPassword } from "../../../../lib/auth";
+import { MODUL_ADMIN } from "../../../../lib/modul-admin";
 
 export const POST: APIRoute = async ({ request, locals }) => {
   const session = locals.admin;
@@ -20,6 +21,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const password = String(body.password || "");
     const role = body.role === "superadmin" ? "superadmin" : "admin";
 
+    const validModulKeys = MODUL_ADMIN.map((m) => m.key);
+    const aksesArray = Array.isArray(body.akses) ? body.akses.filter((a: string) => validModulKeys.includes(a)) : [];
+    const akses = role === "superadmin" ? validModulKeys.join(",") : aksesArray.join(",");
+
     if (!nama || !email || !password) {
       return new Response(JSON.stringify({ error: "Nama, email, dan password wajib diisi" }), {
         status: 400,
@@ -38,8 +43,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     const db = env.yasuki_db;
     await db
-      .prepare("INSERT INTO admin_users (email, password_hash, nama, role) VALUES (?, ?, ?, ?)")
-      .bind(email, passwordHash, nama, role)
+      .prepare("INSERT INTO admin_users (email, password_hash, nama, role, akses) VALUES (?, ?, ?, ?, ?)")
+      .bind(email, passwordHash, nama, role, akses)
       .run();
 
     return new Response(JSON.stringify({ success: true }), {

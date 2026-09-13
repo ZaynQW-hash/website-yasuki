@@ -1,6 +1,7 @@
 ---
 import AdminLayout from "../../../layouts/AdminLayout.astro";
 import { env } from "cloudflare:workers";
+import { MODUL_ADMIN } from "../../../lib/modul-admin";
 
 const admin = Astro.locals.admin;
 
@@ -14,16 +15,21 @@ interface AdminRow {
   email: string;
   role: string;
   aktif: number;
+  akses: string;
   created_at: string;
 }
 
 const db = env.yasuki_db;
 const { results } = await db
-  .prepare("SELECT id, nama, email, role, aktif, created_at FROM admin_users ORDER BY created_at ASC")
+  .prepare("SELECT id, nama, email, role, aktif, akses, created_at FROM admin_users ORDER BY created_at ASC")
   .all<AdminRow>();
 
 function formatTanggal(iso: string): string {
   return new Date(iso.replace(" ", "T") + "Z").toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
+}
+
+function labelModul(key: string): string {
+  return MODUL_ADMIN.find((m) => m.key === key)?.label || key;
 }
 ---
 
@@ -43,7 +49,7 @@ function formatTanggal(iso: string): string {
             <tr>
               <th class="px-4 py-3 font-medium">Nama</th>
               <th class="px-4 py-3 font-medium">Email</th>
-              <th class="px-4 py-3 font-medium">Role</th>
+              <th class="px-4 py-3 font-medium">Role & Akses</th>
               <th class="px-4 py-3 font-medium">Bergabung</th>
               <th class="px-4 py-3 font-medium">Status</th>
               <th class="px-4 py-3 font-medium">Aksi</th>
@@ -51,37 +57,48 @@ function formatTanggal(iso: string): string {
           </thead>
           <tbody class="divide-y divide-slate-100">
             {
-              results.map((u) => (
-                <tr>
-                  <td class="px-4 py-3 text-slate-800 font-medium">
-                    {u.nama} {u.id === admin.uid && <span class="text-xs text-slate-400">(kamu)</span>}
-                  </td>
-                  <td class="px-4 py-3 text-slate-600">{u.email}</td>
-                  <td class="px-4 py-3">
-                    <span class={`px-2 py-1 rounded-full text-xs font-medium ${u.role === "superadmin" ? "bg-purple-100 text-purple-700" : "bg-blue-100 text-blue-700"}`}>
-                      {u.role}
-                    </span>
-                  </td>
-                  <td class="px-4 py-3 text-slate-600 whitespace-nowrap">{formatTanggal(u.created_at)}</td>
-                  <td class="px-4 py-3">
-                    <span class={`px-2 py-1 rounded-full text-xs font-medium ${u.aktif ? "bg-green-100 text-green-800" : "bg-slate-200 text-slate-600"}`}>
-                      {u.aktif ? "Aktif" : "Nonaktif"}
-                    </span>
-                  </td>
-                  <td class="px-4 py-3 whitespace-nowrap">
-                    <div class="flex gap-2">
-                      <a href={`/admin/pengguna/${u.id}/edit`} class="text-xs px-2 py-1 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-700">
-                        Edit
-                      </a>
-                      {u.id !== admin.uid && (
-                        <button class="btn-hapus text-xs px-2 py-1 rounded-lg bg-red-100 hover:bg-red-200 text-red-700" data-id={u.id}>
-                          Hapus
-                        </button>
+              results.map((u) => {
+                const aksesList = (u.akses || "").split(",").filter(Boolean);
+                return (
+                  <tr>
+                    <td class="px-4 py-3 text-slate-800 font-medium align-top">
+                      {u.nama} {u.id === admin.uid && <span class="text-xs text-slate-400">(kamu)</span>}
+                    </td>
+                    <td class="px-4 py-3 text-slate-600 align-top">{u.email}</td>
+                    <td class="px-4 py-3 align-top">
+                      <span class={`inline-block px-2 py-1 rounded-full text-xs font-medium mb-1.5 ${u.role === "superadmin" ? "bg-purple-100 text-purple-700" : "bg-blue-100 text-blue-700"}`}>
+                        {u.role}
+                      </span>
+                      {u.role === "admin" && (
+                        <div class="flex flex-wrap gap-1">
+                          {aksesList.length === 0 && <span class="text-xs text-slate-400">Belum ada akses modul</span>}
+                          {aksesList.map((a) => (
+                            <span class="bg-slate-100 text-slate-600 text-[10px] font-medium px-2 py-0.5 rounded-full">{labelModul(a)}</span>
+                          ))}
+                        </div>
                       )}
-                    </div>
-                  </td>
-                </tr>
-              ))
+                    </td>
+                    <td class="px-4 py-3 text-slate-600 whitespace-nowrap align-top">{formatTanggal(u.created_at)}</td>
+                    <td class="px-4 py-3 align-top">
+                      <span class={`px-2 py-1 rounded-full text-xs font-medium ${u.aktif ? "bg-green-100 text-green-800" : "bg-slate-200 text-slate-600"}`}>
+                        {u.aktif ? "Aktif" : "Nonaktif"}
+                      </span>
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap align-top">
+                      <div class="flex gap-2">
+                        <a href={`/admin/pengguna/${u.id}/edit`} class="text-xs px-2 py-1 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-700">
+                          Edit
+                        </a>
+                        {u.id !== admin.uid && (
+                          <button class="btn-hapus text-xs px-2 py-1 rounded-lg bg-red-100 hover:bg-red-200 text-red-700" data-id={u.id}>
+                            Hapus
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
             }
           </tbody>
         </table>

@@ -1,5 +1,6 @@
 ---
 import AdminLayout from "../../../layouts/AdminLayout.astro";
+import { MODUL_ADMIN } from "../../../lib/modul-admin";
 
 const admin = Astro.locals.admin;
 
@@ -58,9 +59,22 @@ if (admin?.role !== "superadmin") {
           required
           class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-700"
         >
-          <option value="admin">Admin (akses Donasi, Berita, Program)</option>
+          <option value="admin">Admin (akses sesuai centang di bawah)</option>
           <option value="superadmin">Superadmin (akses semua + kelola akun admin lain)</option>
         </select>
+      </div>
+
+      <div id="akses-wrapper">
+        <label class="block text-sm font-medium text-slate-700 mb-2">Akses Modul</label>
+        <div class="space-y-2">
+          {MODUL_ADMIN.map((m) => (
+            <label class="flex items-center gap-2">
+              <input type="checkbox" class="akses-checkbox rounded border-slate-300" value={m.key} />
+              <span class="text-sm text-slate-700">{m.label}</span>
+            </label>
+          ))}
+        </div>
+        <p class="text-xs text-slate-400 mt-2">Centang modul mana aja yang boleh diakses admin ini. Menu Pengguna selalu eksklusif superadmin.</p>
       </div>
 
       <p id="error-msg" class="text-sm text-red-600 hidden"></p>
@@ -80,6 +94,20 @@ if (admin?.role !== "superadmin") {
 </AdminLayout>
 
 <script>
+  const roleSelect = document.getElementById("role") as HTMLSelectElement;
+  const aksesWrapper = document.getElementById("akses-wrapper") as HTMLDivElement;
+
+  function toggleAksesWrapper() {
+    if (roleSelect.value === "superadmin") {
+      aksesWrapper.classList.add("opacity-40", "pointer-events-none");
+    } else {
+      aksesWrapper.classList.remove("opacity-40", "pointer-events-none");
+    }
+  }
+
+  roleSelect.addEventListener("change", toggleAksesWrapper);
+  toggleAksesWrapper();
+
   const form = document.getElementById("form-admin") as HTMLFormElement;
   const btnSubmit = document.getElementById("btn-submit") as HTMLButtonElement;
   const errorMsg = document.getElementById("error-msg") as HTMLParagraphElement;
@@ -91,11 +119,14 @@ if (admin?.role !== "superadmin") {
     btnSubmit.textContent = "Menyimpan...";
 
     const formData = new FormData(form);
+    const akses = Array.from(document.querySelectorAll(".akses-checkbox:checked")).map((el) => (el as HTMLInputElement).value);
+
     const payload = {
       nama: formData.get("nama"),
       email: formData.get("email"),
       password: formData.get("password"),
       role: formData.get("role"),
+      akses,
     };
 
     try {

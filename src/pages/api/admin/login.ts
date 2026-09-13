@@ -9,6 +9,7 @@ interface AdminRow {
   nama: string;
   role: string;
   aktif: number;
+  akses: string;
 }
 
 export const POST: APIRoute = async ({ request, cookies }) => {
@@ -28,7 +29,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
     const db = env.yasuki_db;
     const user = await db
-      .prepare("SELECT id, email, password_hash, nama, role, aktif FROM admin_users WHERE email = ?")
+      .prepare("SELECT id, email, password_hash, nama, role, aktif, akses FROM admin_users WHERE email = ?")
       .bind(email)
       .first<AdminRow>();
 
@@ -54,11 +55,17 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       });
     }
 
+    const akses = (user.akses || "")
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+
     const token = await createSessionToken({
       uid: user.id,
       email: user.email,
       nama: user.nama,
       role: user.role,
+      akses,
     });
 
     cookies.set(SESSION_COOKIE_NAME, token, {
