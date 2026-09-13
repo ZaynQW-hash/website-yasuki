@@ -20,7 +20,7 @@ interface DonasiPendingRow {
   created_at: string;
 }
 
-const [pendingCount, terverifikasiBulanIni, beritaCount, programCount, donasiPending] = await Promise.all([
+const [pendingCount, terverifikasiBulanIni, beritaTayangCount, beritaDraftCount, programCount, donasiPending] = await Promise.all([
   db.prepare("SELECT COUNT(*) as jumlah FROM donasi WHERE status = 'pending'").first<CountRow>(),
   db
     .prepare(
@@ -28,6 +28,7 @@ const [pendingCount, terverifikasiBulanIni, beritaCount, programCount, donasiPen
     )
     .first<TotalRow>(),
   db.prepare("SELECT COUNT(*) as jumlah FROM berita WHERE published = 1").first<CountRow>(),
+  db.prepare("SELECT COUNT(*) as jumlah FROM berita WHERE published = 0").first<CountRow>(),
   db.prepare("SELECT COUNT(*) as jumlah FROM program WHERE status = 1").first<CountRow>(),
   db
     .prepare("SELECT id, nama, program, nominal, kode_referensi, created_at FROM donasi WHERE status = 'pending' ORDER BY created_at DESC LIMIT 5")
@@ -57,9 +58,15 @@ const stats = [
   },
   {
     label: "Berita Tayang",
-    value: String(beritaCount?.jumlah ?? 0),
+    value: String(beritaTayangCount?.jumlah ?? 0),
     href: "/admin/berita",
     accent: "text-blue-800",
+  },
+  {
+    label: "Berita Draft",
+    value: String(beritaDraftCount?.jumlah ?? 0),
+    href: "/admin/berita",
+    accent: beritaDraftCount && beritaDraftCount.jumlah > 0 ? "text-amber-600" : "text-slate-800",
   },
   {
     label: "Program Aktif",
@@ -77,7 +84,7 @@ const stats = [
       Halo, <strong>{admin?.nama}</strong> ({admin?.role})
     </p>
 
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
       {
         stats.map((s) => (
           <a href={s.href} class="bg-white rounded-xl shadow-sm p-4 hover:shadow-md transition-shadow">

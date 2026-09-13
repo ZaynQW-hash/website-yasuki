@@ -78,7 +78,7 @@ const admin = Astro.locals.admin;
           <span id="foto-label-text">Klik untuk pilih foto sampul</span>
         </label>
         <input type="file" id="foto" name="foto" accept="image/*" class="hidden" />
-        <p class="text-xs text-slate-400 mt-1">Ini foto utama yang muncul di kartu daftar berita & halaman detail (beda dari foto yang disisip di isi berita).</p>
+        <p class="text-xs text-slate-400 mt-1">Otomatis dikompres & diubah ke JPEG. Foto utama yang muncul di kartu daftar berita & halaman detail.</p>
       </div>
 
       <div>
@@ -118,6 +118,7 @@ const admin = Astro.locals.admin;
   }
 </style>
 
+<script src="/js/compress-image.js" is:inline></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.7/quill.min.js" is:inline></script>
 <script is:inline>
   function slugify(text) {
@@ -177,6 +178,12 @@ const admin = Astro.locals.admin;
       var range = quill.getSelection(true);
       quill.insertText(range.index, "Mengupload foto...", { italic: true });
 
+      try {
+        file = await window.compressToJpeg(file);
+      } catch (err) {
+        // kalau compress gagal, lanjut pakai file asli
+      }
+
       var fd = new FormData();
       fd.append("foto", file);
 
@@ -220,10 +227,22 @@ const admin = Astro.locals.admin;
     }
 
     btnSubmit.disabled = true;
-    btnSubmit.textContent = "Menyimpan...";
+    btnSubmit.textContent = "Memproses foto...";
 
     var formData = new FormData(form);
     formData.set("published", publishedCheckbox.checked ? "1" : "0");
+
+    var fotoFile = fotoInput.files && fotoInput.files[0];
+    if (fotoFile) {
+      try {
+        var compressed = await window.compressToJpeg(fotoFile);
+        formData.set("foto", compressed, compressed.name);
+      } catch (err) {
+        // kalau compress gagal, lanjut pakai file asli
+      }
+    }
+
+    btnSubmit.textContent = "Menyimpan...";
 
     try {
       var res = await fetch("/api/admin/berita", { method: "POST", body: formData });

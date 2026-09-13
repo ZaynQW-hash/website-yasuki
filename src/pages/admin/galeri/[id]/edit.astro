@@ -1,0 +1,177 @@
+---
+import AdminLayout from "../../../../layouts/AdminLayout.astro";
+import { env } from "cloudflare:workers";
+import { KATEGORI_GALERI } from "../../../../lib/kategori-galeri";
+
+const admin = Astro.locals.admin;
+const id = Number(Astro.params.id);
+
+interface GaleriDetail {
+  id: number;
+  foto: string;
+  kategori: string;
+  caption: string;
+  urutan: number;
+  aktif: number;
+}
+
+const db = env.yasuki_db;
+const galeri = await db.prepare("SELECT id, foto, kategori, caption, urutan, aktif FROM galeri WHERE id = ?").bind(id).first<GaleriDetail>();
+
+if (!galeri) {
+  return Astro.redirect("/admin/galeri");
+}
+
+const kategoriLamaTidakDikenal = !KATEGORI_GALERI.includes(galeri.kategori);
+---
+
+<AdminLayout title="Edit Foto Galeri — Yasuki" admin={admin}>
+  <div class="max-w-md mx-auto">
+    <h1 class="text-xl font-bold text-slate-800 mb-6">Edit Foto Galeri</h1>
+
+    <form id="form-galeri" class="bg-white rounded-xl shadow-sm p-6 space-y-5">
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Foto</label>
+        <div id="foto-preview-wrapper" class="mb-2">
+          <img id="foto-preview" src={galeri.foto} alt={galeri.caption} class="w-full h-40 object-cover rounded-lg border border-slate-200" />
+        </div>
+        <label
+          for="foto"
+          class="flex items-center justify-center gap-2 border-2 border-dashed border-slate-300 rounded-lg py-6 px-4 cursor-pointer hover:border-blue-400 hover:bg-blue-50/50 transition text-sm text-slate-500 text-center"
+        >
+          <span id="foto-label-text">Klik untuk ganti foto</span>
+        </label>
+        <input type="file" id="foto" name="foto" accept="image/*" class="hidden" />
+        <p class="text-xs text-slate-400 mt-1">Biarkan kosong buat tetap pakai foto yang sekarang. Otomatis dikompres & diubah ke JPEG kalau ganti.</p>
+      </div>
+
+      <div>
+        <label for="kategori" class="block text-sm font-medium text-slate-700 mb-1">Kategori</label>
+        <select
+          id="kategori"
+          name="kategori"
+          required
+          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-700"
+        >
+          {kategoriLamaTidakDikenal && (
+            <option value={galeri.kategori} selected>
+              {galeri.kategori} (lama)
+            </option>
+          )}
+          {KATEGORI_GALERI.map((k) => (
+            <option value={k} selected={k === galeri.kategori}>
+              {k}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div>
+        <label for="caption" class="block text-sm font-medium text-slate-700 mb-1">Caption</label>
+        <textarea
+          id="caption"
+          name="caption"
+          rows="2"
+          required
+          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-700"
+          set:text={galeri.caption}
+        ></textarea>
+      </div>
+
+      <div>
+        <label for="urutan" class="block text-sm font-medium text-slate-700 mb-1">Urutan Tampil</label>
+        <input
+          type="number"
+          id="urutan"
+          name="urutan"
+          value={galeri.urutan}
+          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-700"
+        />
+        <p class="text-xs text-slate-400 mt-1">Angka lebih kecil tampil lebih dulu di halaman Galeri.</p>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <input type="checkbox" id="aktif" checked={galeri.aktif === 1} class="rounded border-slate-300" />
+        <label for="aktif" class="text-sm text-slate-700">Tayangkan di halaman Galeri</label>
+      </div>
+
+      <p id="error-msg" class="text-sm text-red-600 hidden"></p>
+
+      <div class="flex gap-3">
+        <button
+          type="submit"
+          id="btn-submit"
+          class="bg-blue-800 hover:bg-blue-900 text-white font-medium px-4 py-2 rounded-lg text-sm disabled:opacity-60"
+        >
+          Simpan Perubahan
+        </button>
+        <a href="/admin/galeri" class="px-4 py-2 rounded-lg text-sm text-slate-600 hover:bg-slate-100">Batal</a>
+      </div>
+    </form>
+  </div>
+</AdminLayout>
+
+<script src="/js/compress-image.js" is:inline></script>
+<script define:vars={{ galeriId: galeri.id }}>
+  var fotoInput = document.getElementById("foto");
+  var fotoPreviewImg = document.getElementById("foto-preview");
+  var fotoLabelText = document.getElementById("foto-label-text");
+
+  fotoInput.addEventListener("change", function () {
+    var file = fotoInput.files && fotoInput.files[0];
+    if (!file) return;
+    fotoLabelText.textContent = file.name;
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      fotoPreviewImg.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+
+  var form = document.getElementById("form-galeri");
+  var btnSubmit = document.getElementById("btn-submit");
+  var errorMsg = document.getElementById("error-msg");
+  var aktifCheckbox = document.getElementById("aktif");
+
+  form.addEventListener("submit", async function (e) {
+    e.preventDefault();
+    errorMsg.classList.add("hidden");
+    btnSubmit.disabled = true;
+    btnSubmit.textContent = "Memproses...";
+
+    var formData = new FormData(form);
+    formData.set("aktif", aktifCheckbox.checked ? "1" : "0");
+
+    var fotoFile = fotoInput.files && fotoInput.files[0];
+    if (fotoFile) {
+      try {
+        var compressed = await window.compressToJpeg(fotoFile);
+        formData.set("foto", compressed, compressed.name);
+      } catch (err) {
+        // kalau compress gagal, lanjut pakai file asli
+      }
+    }
+
+    btnSubmit.textContent = "Menyimpan...";
+
+    try {
+      var res = await fetch("/api/admin/galeri/" + galeriId, { method: "PUT", body: formData });
+      var data = await res.json();
+
+      if (!res.ok) {
+        errorMsg.textContent = data.error || "Gagal menyimpan perubahan";
+        errorMsg.classList.remove("hidden");
+        btnSubmit.disabled = false;
+        btnSubmit.textContent = "Simpan Perubahan";
+        return;
+      }
+
+      window.location.href = "/admin/galeri";
+    } catch (err) {
+      errorMsg.textContent = "Terjadi kesalahan, coba lagi";
+      errorMsg.classList.remove("hidden");
+      btnSubmit.disabled = false;
+      btnSubmit.textContent = "Simpan Perubahan";
+    }
+  });
+</script>

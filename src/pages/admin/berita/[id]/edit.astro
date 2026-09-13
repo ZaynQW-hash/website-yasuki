@@ -116,7 +116,7 @@ const kontenAwalHtml = renderKontenBerita(berita.konten);
           <span id="foto-label-text">{berita.foto ? "Klik untuk ganti foto sampul" : "Klik untuk pilih foto sampul"}</span>
         </label>
         <input type="file" id="foto" name="foto" accept="image/*" class="hidden" />
-        <p class="text-xs text-slate-400 mt-1">Biarkan kosong buat tetap pakai foto yang sekarang.</p>
+        <p class="text-xs text-slate-400 mt-1">Biarkan kosong buat tetap pakai foto yang sekarang. Otomatis dikompres & diubah ke JPEG kalau ganti.</p>
       </div>
 
       <div>
@@ -156,6 +156,7 @@ const kontenAwalHtml = renderKontenBerita(berita.konten);
   }
 </style>
 
+<script src="/js/compress-image.js" is:inline></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.7/quill.min.js" is:inline></script>
 <script define:vars={{ beritaId: berita.id }}>
   // --- Nama file foto sampul (tanpa preview gambar) ---
@@ -192,6 +193,12 @@ const kontenAwalHtml = renderKontenBerita(berita.konten);
 
       var range = quill.getSelection(true);
       quill.insertText(range.index, "Mengupload foto...", { italic: true });
+
+      try {
+        file = await window.compressToJpeg(file);
+      } catch (err) {
+        // kalau compress gagal, lanjut pakai file asli
+      }
 
       var fd = new FormData();
       fd.append("foto", file);
@@ -236,10 +243,22 @@ const kontenAwalHtml = renderKontenBerita(berita.konten);
     }
 
     btnSubmit.disabled = true;
-    btnSubmit.textContent = "Menyimpan...";
+    btnSubmit.textContent = "Memproses foto...";
 
     var formData = new FormData(form);
     formData.set("published", publishedCheckbox.checked ? "1" : "0");
+
+    var fotoFile = fotoInput.files && fotoInput.files[0];
+    if (fotoFile) {
+      try {
+        var compressed = await window.compressToJpeg(fotoFile);
+        formData.set("foto", compressed, compressed.name);
+      } catch (err) {
+        // kalau compress gagal, lanjut pakai file asli
+      }
+    }
+
+    btnSubmit.textContent = "Menyimpan...";
 
     try {
       var res = await fetch("/api/admin/berita/" + beritaId, { method: "PUT", body: formData });

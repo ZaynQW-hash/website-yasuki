@@ -1,0 +1,84 @@
+---
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import { env } from "cloudflare:workers";
+
+const admin = Astro.locals.admin;
+
+interface GaleriRow {
+  id: number;
+  foto: string;
+  kategori: string;
+  caption: string;
+  urutan: number;
+  aktif: number;
+}
+
+const db = env.yasuki_db;
+const { results } = await db
+  .prepare("SELECT id, foto, kategori, caption, urutan, aktif FROM galeri ORDER BY urutan ASC")
+  .all<GaleriRow>();
+---
+
+<AdminLayout title="Kelola Galeri — Yasuki" admin={admin}>
+  <div class="max-w-6xl mx-auto">
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h1 class="text-xl font-bold text-slate-800">Kelola Galeri</h1>
+        <p class="text-slate-500 text-sm mt-1">{results.length} foto</p>
+      </div>
+      <a href="/admin/galeri/tambah" class="bg-blue-800 hover:bg-blue-900 text-white text-sm font-medium px-4 py-2 rounded-lg">
+        + Tambah Foto
+      </a>
+    </div>
+
+    {
+      results.length === 0 && (
+        <div class="bg-white rounded-xl shadow-sm p-10 text-center text-slate-400">Belum ada foto.</div>
+      )
+    }
+
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {
+        results.map((g) => (
+          <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+            <div class="h-32 relative">
+              <img src={g.foto} alt={g.caption} class="w-full h-full object-cover" />
+              {g.aktif === 0 && (
+                <span class="absolute top-2 left-2 bg-slate-800/80 text-white text-[10px] font-medium px-2 py-0.5 rounded-full">Nonaktif</span>
+              )}
+            </div>
+            <div class="p-3">
+              <span class="inline-block bg-amber-50 text-amber-700 text-[10px] font-medium px-2 py-0.5 rounded-full mb-1.5 w-fit">
+                {g.kategori}
+              </span>
+              <p class="text-slate-600 text-xs leading-snug line-clamp-2 mb-2">{g.caption}</p>
+              <div class="flex gap-2">
+                <a href={`/admin/galeri/${g.id}/edit`} class="text-xs px-2 py-1 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-700">
+                  Edit
+                </a>
+                <button class="btn-hapus text-xs px-2 py-1 rounded-lg bg-red-100 hover:bg-red-200 text-red-700" data-id={g.id}>
+                  Hapus
+                </button>
+              </div>
+            </div>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</AdminLayout>
+
+<script>
+  document.querySelectorAll(".btn-hapus").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const id = (btn as HTMLElement).dataset.id;
+      if (!confirm("Hapus foto ini? Tindakan tidak bisa dibatalkan.")) return;
+      const res = await fetch(`/api/admin/galeri/${id}`, { method: "DELETE" });
+      if (res.ok) {
+        window.location.reload();
+      } else {
+        alert("Gagal menghapus foto.");
+      }
+    });
+  });
+</script>

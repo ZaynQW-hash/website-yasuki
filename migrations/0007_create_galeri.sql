@@ -1,0 +1,9 @@
+CREATE TABLE IF NOT EXISTS galeri (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  foto TEXT NOT NULL,
+  kategori TEXT NOT NULL,
+  caption TEXT NOT NULL,
+  urutan INTEGER NOT NULL DEFAULT 0,
+  aktif INTEGER NOT NULL DEFAULT 1,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
