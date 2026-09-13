@@ -8,6 +8,7 @@ interface AdminRow {
   password_hash: string;
   nama: string;
   role: string;
+  aktif: number;
 }
 
 export const POST: APIRoute = async ({ request, cookies }) => {
@@ -27,7 +28,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
     const db = env.yasuki_db;
     const user = await db
-      .prepare("SELECT id, email, password_hash, nama, role FROM admin_users WHERE email = ?")
+      .prepare("SELECT id, email, password_hash, nama, role, aktif FROM admin_users WHERE email = ?")
       .bind(email)
       .first<AdminRow>();
 
@@ -42,6 +43,13 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     if (!valid) {
       return new Response(JSON.stringify({ error: "Email atau password salah" }), {
         status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    if (user.aktif !== 1) {
+      return new Response(JSON.stringify({ error: "Akun ini sudah dinonaktifkan. Hubungi superadmin." }), {
+        status: 403,
         headers: { "Content-Type": "application/json" },
       });
     }

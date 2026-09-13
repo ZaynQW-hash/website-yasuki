@@ -1,0 +1,163 @@
+---
+import AdminLayout from "../../../../layouts/AdminLayout.astro";
+import { env } from "cloudflare:workers";
+
+const admin = Astro.locals.admin;
+
+if (admin?.role !== "superadmin") {
+  return Astro.redirect("/admin");
+}
+
+const id = Number(Astro.params.id);
+
+interface AdminRow {
+  id: number;
+  nama: string;
+  email: string;
+  role: string;
+  aktif: number;
+}
+
+const db = env.yasuki_db;
+const target = await db.prepare("SELECT id, nama, email, role, aktif FROM admin_users WHERE id = ?").bind(id).first<AdminRow>();
+
+if (!target) {
+  return Astro.redirect("/admin/pengguna");
+}
+
+const isSelf = target.id === admin.uid;
+---
+
+<AdminLayout title={`Edit Admin — ${target.nama}`} admin={admin}>
+  <div class="max-w-md mx-auto">
+    <h1 class="text-xl font-bold text-slate-800 mb-6">Edit Admin</h1>
+
+    <form id="form-admin" class="bg-white rounded-xl shadow-sm p-6 space-y-5">
+      <div>
+        <label for="nama" class="block text-sm font-medium text-slate-700 mb-1">Nama</label>
+        <input
+          type="text"
+          id="nama"
+          name="nama"
+          required
+          value={target.nama}
+          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-700"
+        />
+      </div>
+
+      <div>
+        <label for="email" class="block text-sm font-medium text-slate-700 mb-1">Email</label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          required
+          value={target.email}
+          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-700"
+        />
+      </div>
+
+      <div>
+        <label for="password" class="block text-sm font-medium text-slate-700 mb-1">Password Baru</label>
+        <input
+          type="password"
+          id="password"
+          name="password"
+          minlength="8"
+          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-700"
+          placeholder="Biarkan kosong kalau tidak diganti"
+        />
+      </div>
+
+      <div>
+        <label for="role" class="block text-sm font-medium text-slate-700 mb-1">Role</label>
+        <select
+          id="role"
+          name="role"
+          required
+          disabled={isSelf}
+          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-700 disabled:bg-slate-100 disabled:text-slate-400"
+        >
+          <option value="admin" selected={target.role === "admin"}>
+            Admin (akses Donasi, Berita, Program)
+          </option>
+          <option value="superadmin" selected={target.role === "superadmin"}>
+            Superadmin (akses semua + kelola akun admin lain)
+          </option>
+        </select>
+        {isSelf && <p class="text-xs text-slate-400 mt-1">Nggak bisa ubah role akun sendiri, biar nggak kekunci nggak sengaja.</p>}
+      </div>
+
+      {
+        !isSelf && (
+          <div class="flex items-center gap-2">
+            <input type="checkbox" id="aktif" checked={target.aktif === 1} class="rounded border-slate-300" />
+            <label for="aktif" class="text-sm text-slate-700">
+              Akun aktif (bisa login)
+            </label>
+          </div>
+        )
+      }
+
+      <p id="error-msg" class="text-sm text-red-600 hidden"></p>
+
+      <div class="flex gap-3">
+        <button
+          type="submit"
+          id="btn-submit"
+          class="bg-blue-800 hover:bg-blue-900 text-white font-medium px-4 py-2 rounded-lg text-sm disabled:opacity-60"
+        >
+          Simpan Perubahan
+        </button>
+        <a href="/admin/pengguna" class="px-4 py-2 rounded-lg text-sm text-slate-600 hover:bg-slate-100">Batal</a>
+      </div>
+    </form>
+  </div>
+</AdminLayout>
+
+<script define:vars={{ userId: target.id, isSelf }}>
+  const form = document.getElementById("form-admin");
+  const btnSubmit = document.getElementById("btn-submit");
+  const errorMsg = document.getElementById("error-msg");
+  const aktifCheckbox = document.getElementById("aktif");
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    errorMsg.classList.add("hidden");
+    btnSubmit.disabled = true;
+    btnSubmit.textContent = "Menyimpan...";
+
+    const formData = new FormData(form);
+    const payload = {
+      nama: formData.get("nama"),
+      email: formData.get("email"),
+      password: formData.get("password") || undefined,
+      role: formData.get("role"),
+      aktif: isSelf ? true : aktifCheckbox ? aktifCheckbox.checked : true,
+    };
+
+    try {
+      const res = await fetch("/api/admin/pengguna/" + userId, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        errorMsg.textContent = data.error || "Gagal menyimpan perubahan";
+        errorMsg.classList.remove("hidden");
+        btnSubmit.disabled = false;
+        btnSubmit.textContent = "Simpan Perubahan";
+        return;
+      }
+
+      window.location.href = "/admin/pengguna";
+    } catch (err) {
+      errorMsg.textContent = "Terjadi kesalahan, coba lagi";
+      errorMsg.classList.remove("hidden");
+      btnSubmit.disabled = false;
+      btnSubmit.textContent = "Simpan Perubahan";
+    }
+  });
+</script>
