@@ -1,0 +1,187 @@
+---
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import { env } from "cloudflare:workers";
+
+const admin = Astro.locals.admin;
+
+interface ProgramRow {
+  id: number;
+  nama: string;
+  slug: string;
+  kategori: string;
+  foto: string | null;
+  unggulan: number;
+  target: number | null;
+  terkumpul: number | null;
+  tampilkan_progress: number;
+  status: number;
+  urutan: number;
+}
+
+const db = env.yasuki_db;
+const { results } = await db
+  .prepare(
+    "SELECT id, nama, slug, kategori, foto, unggulan, target, terkumpul, tampilkan_progress, status, urutan FROM program ORDER BY urutan ASC, id ASC",
+  )
+  .all<ProgramRow>();
+
+function formatRupiah(n: number | null): string {
+  if (n === null) return "-";
+  return "Rp" + n.toLocaleString("id-ID");
+}
+---
+
+<AdminLayout title="Kelola Program — Yasuki" admin={admin}>
+  <div class="max-w-6xl mx-auto">
+    <div class="flex items-center justify-between mb-2">
+      <h1 class="text-xl font-bold text-slate-800">Kelola Program</h1>
+      <a href="/admin/program/tambah" class="bg-blue-800 hover:bg-blue-900 text-white text-sm font-medium px-4 py-2 rounded-lg">
+        + Tambah Program
+      </a>
+    </div>
+    <p class="text-xs text-slate-400 mb-6">Geser baris pakai ikon ⠿ di kiri untuk ubah urutan tampil di website.</p>
+
+    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-slate-50 text-slate-500 text-left">
+            <tr>
+              <th class="px-3 py-3 font-medium w-8"></th>
+              <th class="px-4 py-3 font-medium">Foto</th>
+              <th class="px-4 py-3 font-medium">Nama</th>
+              <th class="px-4 py-3 font-medium">Kategori</th>
+              <th class="px-4 py-3 font-medium">Unggulan</th>
+              <th class="px-4 py-3 font-medium">Progress</th>
+              <th class="px-4 py-3 font-medium">Status</th>
+              <th class="px-4 py-3 font-medium">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-program" class="divide-y divide-slate-100">
+            {
+              results.length === 0 && (
+                <tr>
+                  <td colspan="8" class="px-4 py-8 text-center text-slate-400">
+                    Belum ada program.
+                  </td>
+                </tr>
+              )
+            }
+            {
+              results.map((p) => (
+                <tr draggable="true" data-id={p.id} class="cursor-grab active:cursor-grabbing bg-white">
+                  <td class="px-3 py-3 text-slate-300 select-none text-center">⠿</td>
+                  <td class="px-4 py-3">
+                    {p.foto ? (
+                      <img src={p.foto} alt={p.nama} class="w-14 h-14 object-cover rounded-lg" />
+                    ) : (
+                      <div class="w-14 h-14 bg-slate-100 rounded-lg" />
+                    )}
+                  </td>
+                  <td class="px-4 py-3 text-slate-800 font-medium max-w-[14rem] truncate">{p.nama}</td>
+                  <td class="px-4 py-3 text-slate-600">{p.kategori}</td>
+                  <td class="px-4 py-3">
+                    {p.unggulan ? (
+                      <span class="px-2 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800">Unggulan</span>
+                    ) : (
+                      <span class="px-2 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-500">Biasa</span>
+                    )}
+                  </td>
+                  <td class="px-4 py-3 text-slate-600 whitespace-nowrap">
+                    {p.tampilkan_progress ? (
+                      <span class="text-xs">
+                        {formatRupiah(p.terkumpul)} / {formatRupiah(p.target)}
+                      </span>
+                    ) : (
+                      <span class="text-xs text-slate-300">Nonaktif</span>
+                    )}
+                  </td>
+                  <td class="px-4 py-3">
+                    <span class={`px-2 py-1 rounded-full text-xs font-medium ${p.status ? "bg-green-100 text-green-800" : "bg-slate-200 text-slate-600"}`}>
+                      {p.status ? "Tayang" : "Nonaktif"}
+                    </span>
+                  </td>
+                  <td class="px-4 py-3 whitespace-nowrap">
+                    <div class="flex gap-2">
+                      <a href={`/admin/program/${p.id}/edit`} class="text-xs px-2 py-1 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-700">
+                        Edit
+                      </a>
+                      <button class="btn-hapus text-xs px-2 py-1 rounded-lg bg-red-100 hover:bg-red-200 text-red-700" data-id={p.id}>
+                        Hapus
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <p id="reorder-status" class="text-xs text-slate-400 mt-2 h-4"></p>
+  </div>
+</AdminLayout>
+
+<script>
+  // --- Hapus program ---
+  document.querySelectorAll(".btn-hapus").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const id = (btn as HTMLElement).dataset.id;
+      if (!confirm("Hapus program ini? Tindakan tidak bisa dibatalkan.")) return;
+      const res = await fetch(`/api/admin/program/${id}`, { method: "DELETE" });
+      if (res.ok) {
+        window.location.reload();
+      } else {
+        alert("Gagal menghapus program.");
+      }
+    });
+  });
+
+  // --- Drag & drop reorder ---
+  const tbody = document.getElementById("tbody-program") as HTMLTableSectionElement;
+  const reorderStatus = document.getElementById("reorder-status") as HTMLParagraphElement;
+  let draggedRow: HTMLTableRowElement | null = null;
+
+  tbody?.querySelectorAll("tr[draggable='true']").forEach((row) => {
+    row.addEventListener("dragstart", () => {
+      draggedRow = row as HTMLTableRowElement;
+      row.classList.add("opacity-40");
+    });
+
+    row.addEventListener("dragend", () => {
+      row.classList.remove("opacity-40");
+      draggedRow = null;
+      simpanUrutan();
+    });
+
+    row.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      if (!draggedRow || draggedRow === row) return;
+      const rect = (row as HTMLTableRowElement).getBoundingClientRect();
+      const tengah = rect.top + rect.height / 2;
+      const posisiMouse = (e as DragEvent).clientY;
+      if (posisiMouse < tengah) {
+        row.parentElement?.insertBefore(draggedRow, row);
+      } else {
+        row.parentElement?.insertBefore(draggedRow, row.nextSibling);
+      }
+    });
+  });
+
+  async function simpanUrutan() {
+    const ids = Array.from(tbody.querySelectorAll("tr[data-id]")).map((row) => Number((row as HTMLElement).dataset.id));
+    if (ids.length === 0) return;
+
+    reorderStatus.textContent = "Menyimpan urutan...";
+    try {
+      const res = await fetch("/api/admin/program/reorder", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ order: ids }),
+      });
+      reorderStatus.textContent = res.ok ? "Urutan tersimpan." : "Gagal menyimpan urutan.";
+      setTimeout(() => (reorderStatus.textContent = ""), 2000);
+    } catch (err) {
+      reorderStatus.textContent = "Gagal terhubung ke server.";
+    }
+  }
+</script>

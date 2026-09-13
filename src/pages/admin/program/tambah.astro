@@ -1,0 +1,248 @@
+---
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import { KATEGORI_PROGRAM } from "../../../lib/kategori-program";
+
+const admin = Astro.locals.admin;
+---
+
+<AdminLayout title="Tambah Program — Yasuki" admin={admin}>
+  <div class="max-w-2xl mx-auto">
+    <h1 class="text-xl font-bold text-slate-800 mb-6">Tambah Program</h1>
+
+    <form id="form-program" class="bg-white rounded-xl shadow-sm p-6 space-y-5">
+      <div>
+        <label for="nama" class="block text-sm font-medium text-slate-700 mb-1">Nama Program</label>
+        <input
+          type="text"
+          id="nama"
+          name="nama"
+          required
+          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-700"
+        />
+      </div>
+
+      <div>
+        <label for="slug" class="block text-sm font-medium text-slate-700 mb-1">Slug</label>
+        <input
+          type="text"
+          id="slug"
+          name="slug"
+          required
+          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-700"
+        />
+        <p class="text-xs text-slate-400 mt-1">Otomatis dari nama, bisa diedit manual. Dipakai untuk jangkar link di halaman Program (/program#slug).</p>
+      </div>
+
+      <div>
+        <label for="kategori" class="block text-sm font-medium text-slate-700 mb-1">Kategori</label>
+        <select
+          id="kategori"
+          name="kategori"
+          required
+          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-700"
+        >
+          <option value="" disabled selected>Pilih kategori</option>
+          {KATEGORI_PROGRAM.map((k) => <option value={k}>{k}</option>)}
+        </select>
+      </div>
+
+      <div>
+        <label for="headline" class="block text-sm font-medium text-slate-700 mb-1">Headline</label>
+        <input
+          type="text"
+          id="headline"
+          name="headline"
+          required
+          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-700"
+          placeholder="Kalimat singkat & menarik, muncul di kartu halaman Donasi"
+        />
+      </div>
+
+      <div>
+        <label for="deskripsi" class="block text-sm font-medium text-slate-700 mb-1">Deskripsi (opsional)</label>
+        <textarea
+          id="deskripsi"
+          name="deskripsi"
+          rows="3"
+          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-700"
+          placeholder="Paragraf penjelasan program. Cuma ditampilkan kalau program ditandai Unggulan."
+        ></textarea>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Foto</label>
+        <div id="foto-preview-wrapper" class="hidden mb-2">
+          <img id="foto-preview" alt="Preview foto" class="w-full h-40 object-cover rounded-lg border border-slate-200" />
+        </div>
+        <label
+          for="foto"
+          class="flex items-center justify-center gap-2 border-2 border-dashed border-slate-300 rounded-lg py-6 px-4 cursor-pointer hover:border-blue-400 hover:bg-blue-50/50 transition text-sm text-slate-500 text-center"
+        >
+          <span id="foto-label-text">Klik untuk pilih foto</span>
+        </label>
+        <input type="file" id="foto" name="foto" accept="image/*" class="hidden" />
+      </div>
+
+      <div class="border-t border-slate-200 pt-5">
+        <label class="flex items-center gap-2 mb-3">
+          <input type="checkbox" id="unggulan" class="rounded border-slate-300" />
+          <span class="text-sm font-medium text-slate-700">Tampilkan sebagai Unggulan</span>
+        </label>
+        <p class="text-xs text-slate-400 mb-3 -mt-2">Program Unggulan tampil sebagai kartu besar dengan deskripsi di halaman Program. Program biasa tampil sebagai kartu kecil.</p>
+
+        <div>
+          <label for="href_custom" class="block text-sm font-medium text-slate-700 mb-1">Link Halaman Detail (opsional)</label>
+          <input
+            type="text"
+            id="href_custom"
+            name="href_custom"
+            class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-700"
+            placeholder="/program/pertanian atau https://situs-eksternal.com"
+          />
+          <p class="text-xs text-slate-400 mt-1">Kosongkan kalau nggak punya halaman detail sendiri — nanti otomatis mengarah ke bagian program ini di halaman Program.</p>
+        </div>
+        <label class="flex items-center gap-2 mt-2">
+          <input type="checkbox" id="href_external" class="rounded border-slate-300" />
+          <span class="text-sm text-slate-600">Link di atas membuka tab baru (link eksternal)</span>
+        </label>
+      </div>
+
+      <div class="border-t border-slate-200 pt-5">
+        <p class="text-sm font-medium text-slate-700 mb-3">Progress Donasi</p>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label for="target" class="block text-sm text-slate-700 mb-1">Target (Rp)</label>
+            <input
+              type="number"
+              id="target"
+              name="target"
+              min="0"
+              class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-700"
+            />
+          </div>
+          <div>
+            <label for="terkumpul" class="block text-sm text-slate-700 mb-1">Terkumpul (Rp)</label>
+            <input
+              type="number"
+              id="terkumpul"
+              name="terkumpul"
+              min="0"
+              class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-700"
+            />
+          </div>
+        </div>
+        <label class="flex items-center gap-2 mt-3">
+          <input type="checkbox" id="tampilkan_progress" class="rounded border-slate-300" />
+          <span class="text-sm text-slate-600">Tampilkan progress bar di website</span>
+        </label>
+      </div>
+
+      <div class="flex items-center gap-2 border-t border-slate-200 pt-5">
+        <input type="checkbox" id="status" checked class="rounded border-slate-300" />
+        <label for="status" class="text-sm text-slate-700">Tayangkan di website</label>
+      </div>
+
+      <p id="error-msg" class="text-sm text-red-600 hidden"></p>
+
+      <div class="flex gap-3">
+        <button
+          type="submit"
+          id="btn-submit"
+          class="bg-blue-800 hover:bg-blue-900 text-white font-medium px-4 py-2 rounded-lg text-sm disabled:opacity-60"
+        >
+          Simpan Program
+        </button>
+        <a href="/admin/program" class="px-4 py-2 rounded-lg text-sm text-slate-600 hover:bg-slate-100">Batal</a>
+      </div>
+    </form>
+  </div>
+</AdminLayout>
+
+<script is:inline>
+  function slugify(text) {
+    return text
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9\s-]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-");
+  }
+
+  var namaInput = document.getElementById("nama");
+  var slugInput = document.getElementById("slug");
+  var slugManuallyEdited = false;
+
+  slugInput.addEventListener("input", function () {
+    slugManuallyEdited = true;
+  });
+
+  namaInput.addEventListener("input", function () {
+    if (!slugManuallyEdited) {
+      slugInput.value = slugify(namaInput.value);
+    }
+  });
+
+  // --- Preview foto ---
+  var fotoInput = document.getElementById("foto");
+  var fotoPreviewWrapper = document.getElementById("foto-preview-wrapper");
+  var fotoPreviewImg = document.getElementById("foto-preview");
+  var fotoLabelText = document.getElementById("foto-label-text");
+
+  fotoInput.addEventListener("change", function () {
+    var file = fotoInput.files && fotoInput.files[0];
+    if (!file) {
+      fotoPreviewWrapper.classList.add("hidden");
+      fotoLabelText.textContent = "Klik untuk pilih foto";
+      return;
+    }
+    fotoLabelText.textContent = file.name;
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      fotoPreviewImg.src = e.target.result;
+      fotoPreviewWrapper.classList.remove("hidden");
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // --- Submit form ---
+  var form = document.getElementById("form-program");
+  var btnSubmit = document.getElementById("btn-submit");
+  var errorMsg = document.getElementById("error-msg");
+  var unggulanCheckbox = document.getElementById("unggulan");
+  var hrefExternalCheckbox = document.getElementById("href_external");
+  var tampilkanProgressCheckbox = document.getElementById("tampilkan_progress");
+  var statusCheckbox = document.getElementById("status");
+
+  form.addEventListener("submit", async function (e) {
+    e.preventDefault();
+    errorMsg.classList.add("hidden");
+    btnSubmit.disabled = true;
+    btnSubmit.textContent = "Menyimpan...";
+
+    var formData = new FormData(form);
+    formData.set("unggulan", unggulanCheckbox.checked ? "1" : "0");
+    formData.set("href_external", hrefExternalCheckbox.checked ? "1" : "0");
+    formData.set("tampilkan_progress", tampilkanProgressCheckbox.checked ? "1" : "0");
+    formData.set("status", statusCheckbox.checked ? "1" : "0");
+
+    try {
+      var res = await fetch("/api/admin/program", { method: "POST", body: formData });
+      var data = await res.json();
+
+      if (!res.ok) {
+        errorMsg.textContent = data.error || "Gagal menyimpan program";
+        errorMsg.classList.remove("hidden");
+        btnSubmit.disabled = false;
+        btnSubmit.textContent = "Simpan Program";
+        return;
+      }
+
+      window.location.href = "/admin/program";
+    } catch (err) {
+      errorMsg.textContent = "Terjadi kesalahan, coba lagi";
+      errorMsg.classList.remove("hidden");
+      btnSubmit.disabled = false;
+      btnSubmit.textContent = "Simpan Program";
+    }
+  });
+</script>
