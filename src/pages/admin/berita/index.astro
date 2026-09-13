@@ -47,7 +47,6 @@ function formatTanggal(iso: string): string {
         <table class="w-full text-sm">
           <thead class="bg-slate-50 text-slate-500 text-left">
             <tr>
-              <th class="px-4 py-3 font-medium">Foto</th>
               <th class="px-4 py-3 font-medium">Judul</th>
               <th class="px-4 py-3 font-medium">Kategori</th>
               <th class="px-4 py-3 font-medium">Tanggal</th>
@@ -59,7 +58,7 @@ function formatTanggal(iso: string): string {
             {
               results.length === 0 && (
                 <tr>
-                  <td colspan="6" class="px-4 py-8 text-center text-slate-400">
+                  <td colspan="5" class="px-4 py-8 text-center text-slate-400">
                     Belum ada berita.
                   </td>
                 </tr>
@@ -68,13 +67,6 @@ function formatTanggal(iso: string): string {
             {
               results.map((b) => (
                 <tr>
-                  <td class="px-4 py-3">
-                    {b.foto ? (
-                      <img src={b.foto} alt={b.judul} class="w-14 h-14 object-cover rounded-lg" />
-                    ) : (
-                      <div class="w-14 h-14 bg-slate-100 rounded-lg" />
-                    )}
-                  </td>
                   <td class="px-4 py-3 text-slate-800 font-medium max-w-xs truncate">{b.judul}</td>
                   <td class="px-4 py-3 text-slate-600">{b.kategori}</td>
                   <td class="px-4 py-3 text-slate-600 whitespace-nowrap">{formatTanggal(b.created_at)}</td>

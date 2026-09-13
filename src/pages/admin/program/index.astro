@@ -47,7 +47,6 @@ function formatRupiah(n: number | null): string {
           <thead class="bg-slate-50 text-slate-500 text-left">
             <tr>
               <th class="px-3 py-3 font-medium w-8"></th>
-              <th class="px-4 py-3 font-medium">Foto</th>
               <th class="px-4 py-3 font-medium">Nama</th>
               <th class="px-4 py-3 font-medium">Kategori</th>
               <th class="px-4 py-3 font-medium">Unggulan</th>
@@ -60,7 +59,7 @@ function formatRupiah(n: number | null): string {
             {
               results.length === 0 && (
                 <tr>
-                  <td colspan="8" class="px-4 py-8 text-center text-slate-400">
+                  <td colspan="7" class="px-4 py-8 text-center text-slate-400">
                     Belum ada program.
                   </td>
                 </tr>
@@ -70,13 +69,6 @@ function formatRupiah(n: number | null): string {
               results.map((p) => (
                 <tr draggable="true" data-id={p.id} class="cursor-grab active:cursor-grabbing bg-white">
                   <td class="px-3 py-3 text-slate-300 select-none text-center">⠿</td>
-                  <td class="px-4 py-3">
-                    {p.foto ? (
-                      <img src={p.foto} alt={p.nama} class="w-14 h-14 object-cover rounded-lg" />
-                    ) : (
-                      <div class="w-14 h-14 bg-slate-100 rounded-lg" />
-                    )}
-                  </td>
                   <td class="px-4 py-3 text-slate-800 font-medium max-w-[14rem] truncate">{p.nama}</td>
                   <td class="px-4 py-3 text-slate-600">{p.kategori}</td>
                   <td class="px-4 py-3">
