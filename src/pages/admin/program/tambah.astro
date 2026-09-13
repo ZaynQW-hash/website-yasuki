@@ -71,9 +71,6 @@ const admin = Astro.locals.admin;
 
       <div>
         <label class="block text-sm font-medium text-slate-700 mb-1">Foto</label>
-        <div id="foto-preview-wrapper" class="hidden mb-2">
-          <img id="foto-preview" alt="Preview foto" class="w-full h-40 object-cover rounded-lg border border-slate-200" />
-        </div>
         <label
           for="foto"
           class="flex items-center justify-center gap-2 border-2 border-dashed border-slate-300 rounded-lg py-6 px-4 cursor-pointer hover:border-blue-400 hover:bg-blue-50/50 transition text-sm text-slate-500 text-center"
@@ -199,26 +196,13 @@ const admin = Astro.locals.admin;
     }
   });
 
-  // --- Preview foto ---
+  // --- Nama file foto (tanpa preview gambar) ---
   var fotoInput = document.getElementById("foto");
-  var fotoPreviewWrapper = document.getElementById("foto-preview-wrapper");
-  var fotoPreviewImg = document.getElementById("foto-preview");
   var fotoLabelText = document.getElementById("foto-label-text");
 
   fotoInput.addEventListener("change", function () {
     var file = fotoInput.files && fotoInput.files[0];
-    if (!file) {
-      fotoPreviewWrapper.classList.add("hidden");
-      fotoLabelText.textContent = "Klik untuk pilih foto";
-      return;
-    }
-    fotoLabelText.textContent = file.name;
-    var reader = new FileReader();
-    reader.onload = function (e) {
-      fotoPreviewImg.src = e.target.result;
-      fotoPreviewWrapper.classList.remove("hidden");
-    };
-    reader.readAsDataURL(file);
+    fotoLabelText.textContent = file ? file.name : "Klik untuk pilih foto";
   });
 
   // --- Rich text editor (Isi Lengkap) ---
@@ -227,7 +211,7 @@ const admin = Astro.locals.admin;
     placeholder: "Tulis isi lengkap program di sini (opsional)...",
     modules: {
       toolbar: {
-        container: [[{ header: [2, 3, false] }], ["bold", "italic", "underline"], ["blockquote"], [{ list: "ordered" }, { list: "bullet" }], ["link", "image"], ["clean"]],
+        container: [[{ header: [2, 3, false] }], ["bold", "italic", "underline"], [{ align: [] }], ["blockquote"], [{ list: "ordered" }, { list: "bullet" }], ["link", "image"], ["clean"]],
         handlers: { image: imageHandler },
       },
     },

@@ -58,6 +58,17 @@ const { html, class: className = "" } = Astro.props;
     text-decoration: underline;
   }
 
+  /* Alignment dari toolbar Quill (align left/center/right/justify) */
+  .artikel-konten :global(.ql-align-center) {
+    text-align: center;
+  }
+  .artikel-konten :global(.ql-align-right) {
+    text-align: right;
+  }
+  .artikel-konten :global(.ql-align-justify) {
+    text-align: justify;
+  }
+
   /* Foto (single maupun di dalam carousel): rasio tetap biar rapi & konsisten */
   .artikel-konten :global(img) {
     display: block;

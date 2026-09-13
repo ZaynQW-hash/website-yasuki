@@ -19,20 +19,34 @@ interface DonasiRow {
   verified_at: string | null;
 }
 
+const PER_PAGE = 20;
+const page = Math.max(1, parseInt(Astro.url.searchParams.get("page") || "1", 10) || 1);
+const offset = (page - 1) * PER_PAGE;
+
 const db = env.yasuki_db;
+
+const whereClause = statusFilter !== "semua" ? " WHERE status = ?1" : "";
+const countBindings: string[] = statusFilter !== "semua" ? [statusFilter] : [];
+const countStmt = countBindings.length
+  ? db.prepare(`SELECT COUNT(*) as total FROM donasi${whereClause}`).bind(...countBindings)
+  : db.prepare(`SELECT COUNT(*) as total FROM donasi${whereClause}`);
+const { results: countRows } = await countStmt.all<{ total: number }>();
+const totalItems = countRows[0]?.total || 0;
+const totalPages = Math.max(1, Math.ceil(totalItems / PER_PAGE));
 
 let query =
   "SELECT id, kode_referensi, nama, whatsapp, program, nominal, pesan, tampilkan_nama, status, created_at, verified_at FROM donasi";
-const bindings: string[] = [];
+const bindings: (string | number)[] = [];
 
 if (statusFilter !== "semua") {
   query += " WHERE status = ?";
   bindings.push(statusFilter);
 }
 
-query += " ORDER BY created_at DESC LIMIT 100";
+query += " ORDER BY created_at DESC LIMIT ? OFFSET ?";
+bindings.push(PER_PAGE, offset);
 
-const stmt = bindings.length ? db.prepare(query).bind(...bindings) : db.prepare(query);
+const stmt = db.prepare(query).bind(...bindings);
 const { results } = await stmt.all<DonasiRow>();
 
 function formatRupiah(n: number): string {
@@ -69,7 +83,7 @@ const filters = [
       {
         filters.map((f) => (
           <a
-            href={`/admin/donasi?status=${f.key}`}
+            href={`/admin/donasi?status=${f.key}&page=1`}
             class={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
               statusFilter === f.key
                 ? "bg-blue-800 text-white"
@@ -147,6 +161,40 @@ const filters = [
         </table>
       </div>
     </div>
+
+    {
+      totalPages > 1 && (
+        <div class="flex items-center justify-between mt-4 text-sm text-slate-500">
+          <p>
+            Halaman {page} dari {totalPages} ({totalItems} donasi)
+          </p>
+          <div class="flex gap-2">
+            <a
+              href={page > 1 ? `/admin/donasi?status=${statusFilter}&page=${page - 1}` : undefined}
+              aria-disabled={page <= 1}
+              class={`px-3 py-1.5 rounded-lg border text-sm font-medium ${
+                page <= 1
+                  ? "border-slate-200 text-slate-300 pointer-events-none"
+                  : "border-slate-300 text-slate-600 hover:bg-slate-100"
+              }`}
+            >
+              ← Sebelumnya
+            </a>
+            <a
+              href={page < totalPages ? `/admin/donasi?status=${statusFilter}&page=${page + 1}` : undefined}
+              aria-disabled={page >= totalPages}
+              class={`px-3 py-1.5 rounded-lg border text-sm font-medium ${
+                page >= totalPages
+                  ? "border-slate-200 text-slate-300 pointer-events-none"
+                  : "border-slate-300 text-slate-600 hover:bg-slate-100"
+              }`}
+            >
+              Berikutnya →
+            </a>
+          </div>
+        </div>
+      )
+    }
   </div>
 </AdminLayout>
 

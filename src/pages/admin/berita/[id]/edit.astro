@@ -109,9 +109,6 @@ const kontenAwalHtml = renderKontenBerita(berita.konten);
 
       <div>
         <label class="block text-sm font-medium text-slate-700 mb-1">Foto Sampul</label>
-        <div id="foto-sampul-preview-wrapper" class={berita.foto ? "mb-2" : "hidden mb-2"}>
-          <img id="foto-sampul-preview" src={berita.foto || ""} alt="Preview foto sampul" class="w-full h-40 object-cover rounded-lg border border-slate-200" />
-        </div>
         <label
           for="foto"
           class="flex items-center justify-center gap-2 border-2 border-dashed border-slate-300 rounded-lg py-6 px-4 cursor-pointer hover:border-blue-400 hover:bg-blue-50/50 transition text-sm text-slate-500 text-center"
@@ -161,22 +158,14 @@ const kontenAwalHtml = renderKontenBerita(berita.konten);
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.7/quill.min.js" is:inline></script>
 <script define:vars={{ beritaId: berita.id }}>
-  // --- Preview foto sampul ---
+  // --- Nama file foto sampul (tanpa preview gambar) ---
   var fotoInput = document.getElementById("foto");
-  var fotoPreviewWrapper = document.getElementById("foto-sampul-preview-wrapper");
-  var fotoPreviewImg = document.getElementById("foto-sampul-preview");
   var fotoLabelText = document.getElementById("foto-label-text");
 
   fotoInput.addEventListener("change", function () {
     var file = fotoInput.files && fotoInput.files[0];
     if (!file) return;
     fotoLabelText.textContent = file.name;
-    var reader = new FileReader();
-    reader.onload = function (e) {
-      fotoPreviewImg.src = e.target.result;
-      fotoPreviewWrapper.classList.remove("hidden");
-    };
-    reader.readAsDataURL(file);
   });
 
   // --- Rich text editor (kontennya udah ke-isi dari server via set:html di atas) ---
@@ -185,7 +174,7 @@ const kontenAwalHtml = renderKontenBerita(berita.konten);
     placeholder: "Tulis isi berita di sini...",
     modules: {
       toolbar: {
-        container: [[{ header: [2, 3, false] }], ["bold", "italic", "underline"], ["blockquote"], [{ list: "ordered" }, { list: "bullet" }], ["link", "image"], ["clean"]],
+        container: [[{ header: [2, 3, false] }], ["bold", "italic", "underline"], [{ align: [] }], ["blockquote"], [{ list: "ordered" }, { list: "bullet" }], ["link", "image"], ["clean"]],
         handlers: { image: imageHandler },
       },
     },
