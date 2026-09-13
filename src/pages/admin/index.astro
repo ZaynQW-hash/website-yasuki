@@ -1,20 +1,147 @@
 ---
 import AdminLayout from "../../layouts/AdminLayout.astro";
+import { env } from "cloudflare:workers";
 
 const admin = Astro.locals.admin;
+const db = env.yasuki_db;
+
+interface CountRow {
+  jumlah: number;
+}
+interface TotalRow {
+  total: number;
+}
+interface DonasiPendingRow {
+  id: number;
+  nama: string;
+  program: string;
+  nominal: number;
+  kode_referensi: string;
+  created_at: string;
+}
+
+const [pendingCount, terverifikasiBulanIni, beritaCount, programCount, donasiPending] = await Promise.all([
+  db.prepare("SELECT COUNT(*) as jumlah FROM donasi WHERE status = 'pending'").first<CountRow>(),
+  db
+    .prepare(
+      "SELECT COALESCE(SUM(nominal), 0) as total FROM donasi WHERE status = 'terverifikasi' AND strftime('%Y-%m', created_at) = strftime('%Y-%m', 'now')",
+    )
+    .first<TotalRow>(),
+  db.prepare("SELECT COUNT(*) as jumlah FROM berita WHERE published = 1").first<CountRow>(),
+  db.prepare("SELECT COUNT(*) as jumlah FROM program WHERE status = 1").first<CountRow>(),
+  db
+    .prepare("SELECT id, nama, program, nominal, kode_referensi, created_at FROM donasi WHERE status = 'pending' ORDER BY created_at DESC LIMIT 5")
+    .all<DonasiPendingRow>(),
+]);
+
+function formatRupiah(n: number): string {
+  return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(n);
+}
+
+function formatTanggal(iso: string): string {
+  return new Date(iso.replace(" ", "T") + "Z").toLocaleDateString("id-ID", { day: "numeric", month: "short" });
+}
+
+const stats = [
+  {
+    label: "Donasi Perlu Diverifikasi",
+    value: String(pendingCount?.jumlah ?? 0),
+    href: "/admin/donasi?status=pending",
+    accent: pendingCount && pendingCount.jumlah > 0 ? "text-amber-600" : "text-slate-800",
+  },
+  {
+    label: "Terverifikasi Bulan Ini",
+    value: formatRupiah(terverifikasiBulanIni?.total ?? 0),
+    href: "/admin/donasi?status=terverifikasi",
+    accent: "text-emerald-600",
+  },
+  {
+    label: "Berita Tayang",
+    value: String(beritaCount?.jumlah ?? 0),
+    href: "/admin/berita",
+    accent: "text-blue-800",
+  },
+  {
+    label: "Program Aktif",
+    value: String(programCount?.jumlah ?? 0),
+    href: "/admin/program",
+    accent: "text-blue-800",
+  },
+];
 ---
 
 <AdminLayout title="Dashboard Admin — Yasuki" admin={admin}>
-  <div class="max-w-4xl mx-auto">
-    <h1 class="text-xl font-bold text-slate-800 mb-6">Dashboard Admin</h1>
+  <div class="max-w-5xl mx-auto">
+    <h1 class="text-xl font-bold text-slate-800 mb-1">Dashboard Admin</h1>
+    <p class="text-slate-500 text-sm mb-6">
+      Halo, <strong>{admin?.nama}</strong> ({admin?.role})
+    </p>
 
-    <div class="bg-white rounded-xl shadow-sm p-6">
-      <p class="text-slate-600 mb-4">
-        Halo, <strong>{admin?.nama}</strong> ({admin?.role}). Login berhasil.
-      </p>
-      <a href="/admin/donasi" class="inline-block bg-blue-800 hover:bg-blue-900 text-white text-sm font-medium px-4 py-2 rounded-lg">
-        Kelola Donasi →
-      </a>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      {
+        stats.map((s) => (
+          <a href={s.href} class="bg-white rounded-xl shadow-sm p-4 hover:shadow-md transition-shadow">
+            <p class="text-slate-500 text-xs mb-1">{s.label}</p>
+            <p class={`text-lg font-bold ${s.accent}`}>{s.value}</p>
+          </a>
+        ))
+      }
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+      <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+        <h2 class="text-sm font-semibold text-slate-700">Donasi Perlu Diverifikasi</h2>
+        <a href="/admin/donasi?status=pending" class="text-xs text-blue-700 font-medium hover:underline">
+          Lihat semua →
+        </a>
+      </div>
+
+      {
+        donasiPending.results.length === 0 && (
+          <p class="px-5 py-8 text-center text-slate-400 text-sm">Semua donasi udah terverifikasi. 🎉</p>
+        )
+      }
+
+      {
+        donasiPending.results.length > 0 && (
+          <div class="divide-y divide-slate-100">
+            {donasiPending.results.map((d) => (
+              <div class="flex items-center justify-between px-5 py-3">
+                <div class="min-w-0">
+                  <p class="text-slate-800 text-sm font-medium truncate">{d.nama}</p>
+                  <p class="text-slate-400 text-xs">
+                    {d.program} · {formatTanggal(d.created_at)} · {d.kode_referensi}
+                  </p>
+                </div>
+                <div class="flex items-center gap-3 flex-shrink-0 ml-3">
+                  <span class="text-slate-700 text-sm font-semibold whitespace-nowrap">{formatRupiah(d.nominal)}</span>
+                  <button class="btn-verify text-xs px-2 py-1 rounded-lg bg-green-600 hover:bg-green-700 text-white" data-id={d.id}>
+                    Verifikasi
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )
+      }
     </div>
   </div>
 </AdminLayout>
+
+<script>
+  async function verifikasi(id: string) {
+    const res = await fetch(`/api/admin/donasi/${id}/verify`, { method: "POST" });
+    if (res.ok) {
+      window.location.reload();
+    } else {
+      alert("Gagal memperbarui status, coba lagi.");
+    }
+  }
+
+  document.querySelectorAll(".btn-verify").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const id = (btn as HTMLElement).dataset.id!;
+      if (confirm("Tandai donasi ini sebagai terverifikasi?")) verifikasi(id);
+    });
+  });
+</script>
