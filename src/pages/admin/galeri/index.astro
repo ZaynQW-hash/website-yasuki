@@ -17,6 +17,9 @@ const db = env.yasuki_db;
 const { results } = await db
   .prepare("SELECT id, foto, kategori, caption, urutan, aktif FROM galeri ORDER BY urutan ASC")
   .all<GaleriRow>();
+
+const kategoriList = [...new Set(results.map((g) => g.kategori))];
+const defaultKategori = kategoriList[0] || "Semua";
 ---
 
 <AdminLayout title="Kelola Galeri — Yasuki" admin={admin}>
@@ -37,41 +40,103 @@ const { results } = await db
       )
     }
 
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-      {
-        results.map((g) => (
-          <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-            <div class="h-32 relative">
-              <img src={g.foto} alt={g.caption} class="w-full h-full object-cover" />
-              {g.aktif === 0 && (
-                <span class="absolute top-2 left-2 bg-slate-800/80 text-white text-[10px] font-medium px-2 py-0.5 rounded-full">Nonaktif</span>
-              )}
-            </div>
-            <div class="p-3">
-              <span class="inline-block bg-amber-50 text-amber-700 text-[10px] font-medium px-2 py-0.5 rounded-full mb-1.5 w-fit">
-                {g.kategori}
-              </span>
-              <p class="text-slate-600 text-xs leading-snug line-clamp-2 mb-2">{g.caption}</p>
-              <div class="flex gap-2">
-                <a href={`/admin/galeri/${g.id}/edit`} class="text-xs px-2 py-1 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-700">
-                  Edit
-                </a>
-                <button class="btn-hapus text-xs px-2 py-1 rounded-lg bg-red-100 hover:bg-red-200 text-red-700" data-id={g.id}>
-                  Hapus
+    {
+      results.length > 0 && (
+        <>
+          <div class="flex flex-wrap gap-2 mb-2" id="filter-bar">
+            <button
+              data-filter="Semua"
+              class="filter-btn text-xs font-medium px-3 py-1.5 rounded-full border transition bg-white text-slate-600 border-slate-300 hover:border-blue-900"
+            >
+              Semua ({results.length})
+            </button>
+            {kategoriList.map((k) => {
+              const jumlah = results.filter((g) => g.kategori === k).length;
+              return (
+                <button
+                  data-filter={k}
+                  class={`filter-btn text-xs font-medium px-3 py-1.5 rounded-full border transition ${
+                    k === defaultKategori ? "bg-blue-900 text-white border-blue-900" : "bg-white text-slate-600 border-slate-300 hover:border-blue-900"
+                  }`}
+                >
+                  {k} ({jumlah})
                 </button>
-              </div>
-            </div>
+              );
+            })}
           </div>
-        ))
-      }
-    </div>
+          <p id="jumlah-tampil" class="text-xs text-slate-400 mb-5" />
+
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="galeri-grid">
+            {results.map((g) => (
+              <div class={`galeri-item bg-white rounded-xl shadow-sm overflow-hidden ${g.kategori === defaultKategori ? "" : "hidden"}`} data-kategori={g.kategori}>
+                <div class="h-32 relative">
+                  <img src={g.foto} alt={g.caption} class="w-full h-full object-cover" loading="lazy" />
+                  {g.aktif === 0 && (
+                    <span class="absolute top-2 left-2 bg-slate-800/80 text-white text-[10px] font-medium px-2 py-0.5 rounded-full">Nonaktif</span>
+                  )}
+                </div>
+                <div class="p-3">
+                  <span class="inline-block bg-amber-50 text-amber-700 text-[10px] font-medium px-2 py-0.5 rounded-full mb-1.5 w-fit">
+                    {g.kategori}
+                  </span>
+                  <p class="text-slate-600 text-xs leading-snug line-clamp-2 mb-2">{g.caption}</p>
+                  <div class="flex gap-2">
+                    <a href={`/admin/galeri/${g.id}/edit`} class="text-xs px-2 py-1 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-700">
+                      Edit
+                    </a>
+                    <button class="btn-hapus text-xs px-2 py-1 rounded-lg bg-red-100 hover:bg-red-200 text-red-700" data-id={g.id}>
+                      Hapus
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )
+    }
   </div>
 </AdminLayout>
 
-<script>
+<script define:vars={{ defaultKategori, totalFoto: results.length }}>
+  const buttons = document.querySelectorAll(".filter-btn");
+  const items = document.querySelectorAll(".galeri-item");
+  const jumlahTampilEl = document.getElementById("jumlah-tampil");
+
+  function updateJumlahTampil() {
+    const visible = Array.from(items).filter((item) => !item.classList.contains("hidden")).length;
+    jumlahTampilEl.textContent = `Menampilkan ${visible} dari ${totalFoto} foto`;
+  }
+
+  buttons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const filter = btn.getAttribute("data-filter");
+
+      buttons.forEach((b) => {
+        b.classList.remove("bg-blue-900", "text-white", "border-blue-900");
+        b.classList.add("bg-white", "text-slate-600", "border-slate-300");
+      });
+      btn.classList.add("bg-blue-900", "text-white", "border-blue-900");
+      btn.classList.remove("bg-white", "text-slate-600", "border-slate-300");
+
+      items.forEach((item) => {
+        const kategori = item.getAttribute("data-kategori");
+        if (filter === "Semua" || kategori === filter) {
+          item.classList.remove("hidden");
+        } else {
+          item.classList.add("hidden");
+        }
+      });
+
+      updateJumlahTampil();
+    });
+  });
+
+  updateJumlahTampil();
+
   document.querySelectorAll(".btn-hapus").forEach((btn) => {
     btn.addEventListener("click", async () => {
-      const id = (btn as HTMLElement).dataset.id;
+      const id = btn.dataset.id;
       if (!confirm("Hapus foto ini? Tindakan tidak bisa dibatalkan.")) return;
       const res = await fetch(`/api/admin/galeri/${id}`, { method: "DELETE" });
       if (res.ok) {

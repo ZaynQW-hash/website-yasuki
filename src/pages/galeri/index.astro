@@ -56,12 +56,15 @@ const fotoSampulHero = semuaFoto[0]?.foto || "/images/galeri/qurban-2025-4.jpg";
 
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="galeri-grid">
               {semuaFoto.map((f) => (
-                <div class="gallery-item rounded-lg overflow-hidden shadow-sm bg-slate-50" data-kategori={f.kategori}>
-                  <div class="h-32 md:h-36">
-                    <img src={f.foto} alt={f.caption} class="w-full h-full object-cover" loading="lazy" />
+                <button type="button" class="gallery-item text-left rounded-lg overflow-hidden shadow-sm bg-slate-50 group cursor-pointer" data-kategori={f.kategori}>
+                  <div class="h-32 md:h-36 relative overflow-hidden">
+                    <img src={f.foto} alt={f.caption} class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+                    <span class="absolute top-2 left-2 bg-amber-400 text-slate-900 text-[10px] font-semibold px-2 py-0.5 rounded-full">
+                      {f.kategori}
+                    </span>
                   </div>
-                  <p class="text-slate-600 text-[11px] p-2 leading-snug">{f.caption}</p>
-                </div>
+                  <p class="gallery-caption text-slate-600 text-[11px] p-2 leading-snug text-center">{f.caption}</p>
+                </button>
               ))}
             </div>
           </>
@@ -80,11 +83,47 @@ const fotoSampulHero = semuaFoto[0]?.foto || "/images/galeri/qurban-2025-4.jpg";
       Donasi Sekarang
     </a>
   </section>
+
+  <!-- Lightbox popup -->
+  <div id="lightbox" class="hidden fixed inset-0 z-50 items-center justify-center p-4 bg-blue-950/90">
+    <button type="button" id="lightbox-close" aria-label="Tutup" class="absolute top-4 right-4 text-white text-2xl w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10">
+      ✕
+    </button>
+    <button type="button" id="lightbox-prev" aria-label="Sebelumnya" class="absolute left-2 md:left-6 text-white text-3xl w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10">
+      ‹
+    </button>
+    <button type="button" id="lightbox-next" aria-label="Berikutnya" class="absolute right-2 md:right-6 text-white text-3xl w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10">
+      ›
+    </button>
+    <div class="max-w-3xl w-full lightbox-pop">
+      <img id="lightbox-img" src="" alt="" class="w-full max-h-[70vh] object-contain rounded-lg mx-auto" />
+      <div class="text-center mt-4">
+        <span id="lightbox-kategori" class="inline-block bg-amber-400 text-slate-900 text-xs font-semibold px-3 py-1 rounded-full mb-2"></span>
+        <p id="lightbox-caption" class="text-white text-sm"></p>
+      </div>
+    </div>
+  </div>
 </Layout>
+
+<style>
+  @keyframes lightboxPop {
+    from {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  .lightbox-pop {
+    animation: lightboxPop 0.2s ease-out both;
+  }
+</style>
 
 <script>
   const buttons = document.querySelectorAll('.filter-btn');
-  const items = document.querySelectorAll('.gallery-item');
+  const items = Array.from(document.querySelectorAll('.gallery-item'));
 
   buttons.forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -106,5 +145,62 @@ const fotoSampulHero = semuaFoto[0]?.foto || "/images/galeri/qurban-2025-4.jpg";
         }
       });
     });
+  });
+
+  // --- Lightbox ---
+  const lightbox = document.getElementById('lightbox') as HTMLDivElement;
+  const lightboxImg = document.getElementById('lightbox-img') as HTMLImageElement;
+  const lightboxCaption = document.getElementById('lightbox-caption') as HTMLParagraphElement;
+  const lightboxKategori = document.getElementById('lightbox-kategori') as HTMLSpanElement;
+  let currentIndex = 0;
+
+  function getVisibleItems(): HTMLElement[] {
+    return items.filter((item) => !item.classList.contains('hidden')) as HTMLElement[];
+  }
+
+  function openLightbox(index: number) {
+    const visible = getVisibleItems();
+    if (visible.length === 0) return;
+    currentIndex = ((index % visible.length) + visible.length) % visible.length;
+    const item = visible[currentIndex];
+    const img = item.querySelector('img') as HTMLImageElement;
+    const caption = item.querySelector('.gallery-caption')?.textContent?.trim() || '';
+    const kategori = item.getAttribute('data-kategori') || '';
+
+    lightboxImg.src = img.src;
+    lightboxImg.alt = img.alt;
+    lightboxCaption.textContent = caption;
+    lightboxKategori.textContent = kategori;
+
+    lightbox.classList.remove('hidden');
+    lightbox.classList.add('flex');
+    document.body.classList.add('overflow-hidden');
+  }
+
+  function closeLightbox() {
+    lightbox.classList.add('hidden');
+    lightbox.classList.remove('flex');
+    document.body.classList.remove('overflow-hidden');
+  }
+
+  items.forEach((item) => {
+    item.addEventListener('click', () => {
+      const visible = getVisibleItems();
+      openLightbox(visible.indexOf(item as HTMLElement));
+    });
+  });
+
+  document.getElementById('lightbox-close')?.addEventListener('click', closeLightbox);
+  lightbox.addEventListener('click', (e) => {
+    if (e.target === lightbox) closeLightbox();
+  });
+  document.getElementById('lightbox-prev')?.addEventListener('click', () => openLightbox(currentIndex - 1));
+  document.getElementById('lightbox-next')?.addEventListener('click', () => openLightbox(currentIndex + 1));
+
+  document.addEventListener('keydown', (e) => {
+    if (lightbox.classList.contains('hidden')) return;
+    if (e.key === 'Escape') closeLightbox();
+    if (e.key === 'ArrowLeft') openLightbox(currentIndex - 1);
+    if (e.key === 'ArrowRight') openLightbox(currentIndex + 1);
   });
 </script>
