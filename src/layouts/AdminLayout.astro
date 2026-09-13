@@ -51,6 +51,12 @@ const navItems = [
 ];
 
 const visibleNavItems = navItems.filter((item) => !item.modul || (admin && bolehAksesModul(admin, item.modul)));
+
+function isNavActive(href: string): boolean {
+  // Dashboard (/admin) cuma aktif kalau BENERAN lagi di /admin, bukan cuma diawali /admin/
+  if (href === "/admin") return currentPath === "/admin";
+  return currentPath === href || currentPath.startsWith(href + "/");
+}
 ---
 
 <html lang="id">
@@ -75,7 +81,7 @@ const visibleNavItems = navItems.filter((item) => !item.modul || (admin && boleh
         <nav class="flex-1 px-3 py-4 space-y-1">
           {
             visibleNavItems.map((item) => {
-              const isActive = currentPath === item.href || currentPath.startsWith(item.href + "/");
+              const isActive = isNavActive(item.href);
               return (
                 <a
                   href={item.href}
@@ -126,7 +132,7 @@ const visibleNavItems = navItems.filter((item) => !item.modul || (admin && boleh
       <nav class="md:hidden flex bg-blue-900 text-white text-sm overflow-x-auto">
         {
           visibleNavItems.map((item) => {
-            const isActive = currentPath === item.href || currentPath.startsWith(item.href + "/");
+            const isActive = isNavActive(item.href);
             return (
               <a href={item.href} class={`flex-1 text-center py-2.5 whitespace-nowrap px-3 ${isActive ? "bg-blue-800 font-medium" : "text-blue-200"}`}>
                 {item.label}

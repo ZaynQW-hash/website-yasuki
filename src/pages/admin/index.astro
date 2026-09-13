@@ -24,8 +24,22 @@ interface DonasiPendingRow {
   kode_referensi: string;
   created_at: string;
 }
+interface HalamanPopulerRow {
+  path: string;
+  jumlah: number;
+}
 
-const [pendingCount, terverifikasiBulanIni, beritaTayangCount, beritaDraftCount, programCount, donasiPending] = await Promise.all([
+const [
+  pendingCount,
+  terverifikasiBulanIni,
+  beritaTayangCount,
+  beritaDraftCount,
+  programCount,
+  donasiPending,
+  kunjunganHariIni,
+  kunjungan7Hari,
+  halamanPopuler,
+] = await Promise.all([
   bisaDonasi ? db.prepare("SELECT COUNT(*) as jumlah FROM donasi WHERE status = 'pending'").first<CountRow>() : null,
   bisaDonasi
     ? db
@@ -42,6 +56,13 @@ const [pendingCount, terverifikasiBulanIni, beritaTayangCount, beritaDraftCount,
         .prepare("SELECT id, nama, program, nominal, kode_referensi, created_at FROM donasi WHERE status = 'pending' ORDER BY created_at DESC LIMIT 5")
         .all<DonasiPendingRow>()
     : null,
+  db.prepare("SELECT COUNT(*) as jumlah FROM page_views WHERE date(created_at) = date('now')").first<CountRow>(),
+  db.prepare("SELECT COUNT(*) as jumlah FROM page_views WHERE created_at >= datetime('now', '-7 days')").first<CountRow>(),
+  db
+    .prepare(
+      "SELECT path, COUNT(*) as jumlah FROM page_views WHERE created_at >= datetime('now', '-7 days') GROUP BY path ORDER BY jumlah DESC LIMIT 5",
+    )
+    .all<HalamanPopulerRow>(),
 ]);
 
 function formatRupiah(n: number): string {
@@ -95,7 +116,7 @@ const stats = [
 
     {
       stats.length === 0 && (
-        <div class="bg-white rounded-xl shadow-sm p-6 text-slate-500 text-sm">
+        <div class="bg-white rounded-xl shadow-sm p-6 text-slate-500 text-sm mb-8">
           Kamu belum punya akses ke modul manapun. Hubungi superadmin kalau ini keliru.
         </div>
       )
@@ -113,6 +134,34 @@ const stats = [
         </div>
       )
     }
+
+    <div class="grid md:grid-cols-3 gap-4 mb-8">
+      <div class="bg-white rounded-xl shadow-sm p-4">
+        <p class="text-slate-500 text-xs mb-1">Kunjungan Hari Ini</p>
+        <p class="text-lg font-bold text-blue-800">{kunjunganHariIni?.jumlah ?? 0}</p>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm p-4">
+        <p class="text-slate-500 text-xs mb-1">Kunjungan 7 Hari Terakhir</p>
+        <p class="text-lg font-bold text-blue-800">{kunjungan7Hari?.jumlah ?? 0}</p>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm p-4">
+        <p class="text-slate-500 text-xs mb-2">Halaman Terpopuler (7 hari)</p>
+        {
+          halamanPopuler.results.length === 0 ? (
+            <p class="text-slate-400 text-xs">Belum ada data</p>
+          ) : (
+            <ul class="space-y-1">
+              {halamanPopuler.results.map((h) => (
+                <li class="flex items-center justify-between text-xs">
+                  <span class="text-slate-600 truncate">{h.path}</span>
+                  <span class="text-slate-800 font-semibold ml-2 flex-shrink-0">{h.jumlah}</span>
+                </li>
+              ))}
+            </ul>
+          )
+        }
+      </div>
+    </div>
 
     {
       bisaDonasi && (

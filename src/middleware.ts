@@ -1,15 +1,31 @@
 import { defineMiddleware } from "astro:middleware";
+import { env } from "cloudflare:workers";
 import { verifySessionToken, bolehAksesModul, SESSION_COOKIE_NAME } from "./lib/auth";
 
 const MODUL_PATTERN = /^\/(?:admin|api\/admin)\/(donasi|berita|program|galeri|pengguna)(?:\/|$)/;
 
+/** Halaman publik biasa: bukan file statis (css/js/gambar/dll), diakses lewat GET. */
+function terlihatSepertiHalaman(request: Request, pathname: string): boolean {
+  if (request.method !== "GET") return false;
+  const lastSegment = pathname.split("/").pop() || "";
+  return !lastSegment.includes(".");
+}
+
 export const onRequest = defineMiddleware(async (context, next) => {
-  const { url, cookies, redirect } = context;
+  const { url, cookies, redirect, request } = context;
 
   const isAdminPage = url.pathname.startsWith("/admin") && url.pathname !== "/admin/login";
   const isAdminApi = url.pathname.startsWith("/api/admin") && url.pathname !== "/api/admin/login";
 
   if (!isAdminPage && !isAdminApi) {
+    // Catat kunjungan halaman publik buat statistik di dashboard admin.
+    if (!url.pathname.startsWith("/api") && terlihatSepertiHalaman(request, url.pathname)) {
+      try {
+        await env.yasuki_db.prepare("INSERT INTO page_views (path) VALUES (?)").bind(url.pathname).run();
+      } catch {
+        // gagal senyap, jangan sampai nge-block halaman cuma gara-gara pencatatan gagal
+      }
+    }
     return next();
   }
 
