@@ -1,34 +1,42 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import Breadcrumb from '../../components/Breadcrumb.astro';
+import { env } from "cloudflare:workers";
 
-const programCards = [
-  {
-    nama: "Pembangunan Masjid & Asrama",
-    kategori: "Infrastruktur",
-    headline: "Bantu Selesaikan Pembangunan Masjid Darussalam",
-    foto: "/images/program/pembangunan-asrama.jpg",
-    href: "https://yasuki.site",
-    external: true,
-    terkumpul: "Rp81.180.000",
-    target: 270000000,
-    persen: 30,
-  },
-  {
-    nama: "Pertanian & Ketahanan Pangan",
-    kategori: "Pemberdayaan",
-    headline: "Dukung Kemandirian Pangan Yasuki",
-    foto: "/images/program/pertanian/panen-anak-binaan.jpg",
-    href: "/program/pertanian",
-  },
-  { nama: "Santunan Yatim & Dhuafa", kategori: "Santunan", headline: "Santuni Anak Yatim & Dhuafa Setiap Bulan", foto: "/images/program/santunan-yatim-dhuafa.jpg", href: "/program#santunan-yatim-dhuafa" },
-  { nama: "Santunan Lansia", kategori: "Santunan", headline: "Perhatian dan Kasih untuk Lansia Dhuafa", foto: "/images/program/santunan-lansia.jpg", href: "/program#santunan-lansia" },
-  { nama: "Wakaf Al-Qur'an", kategori: "Keagamaan", headline: "Wakafkan Al-Qur'an untuk Masjid & TPQ", foto: "/images/program/wakaf-alquran.jpg", href: "/program#wakaf-alquran" },
-  { nama: "Istighosah & Doa Bersama", kategori: "Keagamaan", headline: "Rangkul Warga Lewat Doa Bersama", foto: "/images/program/istighosah.jpg", href: "/program#istighosah" },
-  { nama: "Shobarumat", kategori: "Sosial", headline: "Sedekah Barang Layak Pakai untuk Umat", foto: "/images/program/shobarumat.jpg", href: "/program#shobarumat" },
-  { nama: "Tahfidzul Qur'an", kategori: "Pendidikan", headline: "Cetak Generasi Penghafal Al-Qur'an", foto: "/images/program/tahfidz.jpg", href: "/program#tahfidz" },
-  { nama: "Bimbel Gratis", kategori: "Pendidikan", headline: "Buka Akses Belajar untuk Anak Dhuafa", foto: "/images/program/bimbel-gratis.jpg", href: "/program#bimbel-gratis" },
-];
+interface ProgramRow {
+  nama: string;
+  slug: string;
+  kategori: string;
+  headline: string;
+  foto: string | null;
+  href_custom: string | null;
+  href_external: number;
+  target: number | null;
+  terkumpul: number | null;
+  tampilkan_progress: number;
+}
+
+const db = env.yasuki_db;
+const { results: programRows } = await db
+  .prepare(
+    "SELECT nama, slug, kategori, headline, foto, href_custom, href_external, target, terkumpul, tampilkan_progress FROM program WHERE status = 1 ORDER BY urutan ASC, id ASC",
+  )
+  .all<ProgramRow>();
+
+const programCards = programRows.map((p) => {
+  const showProgress = !!p.tampilkan_progress && !!p.target && p.target > 0 && p.terkumpul !== null;
+  return {
+    nama: p.nama,
+    kategori: p.kategori,
+    headline: p.headline,
+    foto: p.foto,
+    href: p.href_custom || `/program#${p.slug}`,
+    external: !!p.href_custom && !!p.href_external,
+    terkumpul: showProgress ? `Rp${p.terkumpul!.toLocaleString("id-ID")}` : null,
+    target: p.target,
+    persen: showProgress ? Math.min(100, Math.round((p.terkumpul! / p.target!) * 100)) : null,
+  };
+});
 ---
 <Layout title="Donasi — Yasuki">
   <section class="relative pt-24 pb-16 px-6 text-center overflow-hidden">
@@ -125,8 +133,10 @@ const programCards = [
             target={p.external ? "_blank" : undefined}
             class="group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition flex flex-col"
           >
-            <div class="relative h-32">
-              <img src={p.foto} alt={p.nama} class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+            <div class="relative h-32 bg-slate-100">
+              {p.foto && (
+                <img src={p.foto} alt={p.nama} class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+              )}
               <div class="absolute inset-0 bg-gradient-to-t from-blue-950/90 via-blue-950/20 to-transparent" />
               <p class="absolute bottom-2 left-2 right-2 text-white text-xs font-bold leading-tight">{p.headline}</p>
             </div>

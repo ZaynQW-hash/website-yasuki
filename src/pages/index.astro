@@ -2,15 +2,6 @@
 import Layout from '../layouts/Layout.astro';
 import { env } from "cloudflare:workers";
 
-const programTeaser = [
-  { nama: "Santunan Yatim & Dhuafa", foto: "/images/program/santunan-yatim-dhuafa.jpg" },
-  { nama: "Pembangunan Masjid & Asrama", foto: "/images/program/pembangunan-asrama.jpg" },
-  { nama: "Santunan Lansia", foto: "/images/program/santunan-lansia.jpg" },
-  { nama: "Wakaf Al-Qur'an", foto: "/images/program/wakaf-alquran.jpg" },
-  { nama: "Tahfidzul Qur'an", foto: "/images/program/tahfidz.jpg" },
-  { nama: "Bimbel Gratis", foto: "/images/program/bimbel-gratis.jpg" },
-];
-
 const stats = [
   { label: "Relawan", value: "32" },
   { label: "Anak Binaan", value: "152" },
@@ -27,10 +18,19 @@ interface BeritaRow {
   created_at: string;
 }
 
+interface ProgramTeaserRow {
+  nama: string;
+  foto: string | null;
+}
+
 const db = env.yasuki_db;
 const { results: beritaTerbaru } = await db
   .prepare("SELECT id, judul, slug, kategori, foto, created_at FROM berita WHERE published = 1 ORDER BY created_at DESC LIMIT 3")
   .all<BeritaRow>();
+
+const { results: programTeaser } = await db
+  .prepare("SELECT nama, foto FROM program WHERE status = 1 ORDER BY urutan ASC, id ASC LIMIT 6")
+  .all<ProgramTeaserRow>();
 
 function formatTanggal(iso: string): string {
   return new Date(iso.replace(" ", "T") + "Z").toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
@@ -141,8 +141,10 @@ function formatTanggal(iso: string): string {
       </div>
       <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
         {programTeaser.map((p) => (
-          <div class="relative rounded-lg overflow-hidden h-40 group">
-            <img src={p.foto} alt={p.nama} class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+          <div class="relative rounded-lg overflow-hidden h-40 group bg-slate-100">
+            {p.foto && (
+              <img src={p.foto} alt={p.nama} class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+            )}
             <div class="absolute inset-0 bg-gradient-to-t from-blue-950 via-blue-950/40 to-transparent" />
             <p class="absolute bottom-2 left-2 right-2 text-white text-xs md:text-sm font-medium">{p.nama}</p>
           </div>
