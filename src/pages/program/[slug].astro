@@ -1,6 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import Breadcrumb from '../../components/Breadcrumb.astro';
+import ArtikelKonten from '../../components/ArtikelKonten.astro';
 import { env } from "cloudflare:workers";
 import { renderKontenBerita } from "../../lib/format-konten";
 
@@ -76,7 +77,7 @@ const kontenHtml = program.konten
         </div>
       )}
 
-      <article class="artikel-konten text-slate-700 fade-in-up fade-in-delay" set:html={kontenHtml} />
+      <ArtikelKonten html={kontenHtml} class="text-slate-700 fade-in-up fade-in-delay" />
 
       <div class="mt-10 pt-6 border-t border-slate-200">
         <a href="/program" class="text-blue-700 font-medium text-sm hover:underline">← Kembali ke semua program</a>
@@ -112,53 +113,5 @@ const kontenHtml = program.konten
   }
   .fade-in-delay {
     animation-delay: 0.15s;
-  }
-
-  .artikel-konten :global(h2) {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: #172554;
-    margin-top: 2rem;
-    margin-bottom: 0.75rem;
-  }
-  .artikel-konten :global(h3) {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #172554;
-    margin-top: 1.5rem;
-    margin-bottom: 0.5rem;
-  }
-  .artikel-konten :global(p) {
-    margin-bottom: 1rem;
-    line-height: 1.75;
-  }
-  .artikel-konten :global(ul),
-  .artikel-konten :global(ol) {
-    margin: 1rem 0 1rem 1.5rem;
-  }
-  .artikel-konten :global(ul) {
-    list-style: disc;
-  }
-  .artikel-konten :global(ol) {
-    list-style: decimal;
-  }
-  .artikel-konten :global(li) {
-    margin-bottom: 0.5rem;
-  }
-  .artikel-konten :global(blockquote) {
-    border-left: 4px solid #fbbf24;
-    padding-left: 1rem;
-    font-style: italic;
-    color: #475569;
-    margin: 1.5rem 0;
-  }
-  .artikel-konten :global(a) {
-    color: #1d4ed8;
-    text-decoration: underline;
-  }
-  .artikel-konten :global(img) {
-    border-radius: 0.75rem;
-    margin: 1.5rem 0;
-    width: 100%;
   }
 </style>

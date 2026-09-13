@@ -1,0 +1,289 @@
+---
+// Bungkus konten artikel (Berita & Program) supaya gambar tampil rapi & konsisten:
+// - Semua foto dipaksa rasio 16:9 + object-fit cover (nggak ada lagi foto gepeng/molor)
+// - Alt text foto ditampilin sebagai caption kecil italic di bawahnya
+// - Foto yang berurutan (2+ nempel langsung, misal galeri) otomatis digabung jadi carousel geser
+// - Foto tunggal yang disisip di tengah teks tetap tampil biasa (nggak dipaksa masuk carousel)
+interface Props {
+  html: string;
+  class?: string;
+}
+
+const { html, class: className = "" } = Astro.props;
+---
+
+<article class:list={["artikel-konten", className]} set:html={html} />
+
+<style>
+  .artikel-konten :global(h2) {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #172554;
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+  }
+  .artikel-konten :global(h3) {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #172554;
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+  .artikel-konten :global(p) {
+    margin-bottom: 1rem;
+    line-height: 1.75;
+  }
+  .artikel-konten :global(ul),
+  .artikel-konten :global(ol) {
+    margin: 1rem 0 1rem 1.5rem;
+  }
+  .artikel-konten :global(ul) {
+    list-style: disc;
+  }
+  .artikel-konten :global(ol) {
+    list-style: decimal;
+  }
+  .artikel-konten :global(li) {
+    margin-bottom: 0.5rem;
+  }
+  .artikel-konten :global(blockquote) {
+    border-left: 4px solid #fbbf24;
+    padding-left: 1rem;
+    font-style: italic;
+    color: #475569;
+    margin: 1.5rem 0;
+  }
+  .artikel-konten :global(a) {
+    color: #1d4ed8;
+    text-decoration: underline;
+  }
+
+  /* Foto (single maupun di dalam carousel): rasio tetap biar rapi & konsisten */
+  .artikel-konten :global(img) {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    border-radius: 0.75rem;
+  }
+  .artikel-konten :global(figure.foto-tunggal) {
+    margin: 1.5rem 0;
+  }
+  .artikel-konten :global(figure.foto-tunggal figcaption),
+  .artikel-konten :global(.galeri-caption) {
+    font-size: 0.75rem;
+    font-style: italic;
+    color: #64748b;
+    text-align: center;
+    margin-top: 0.5rem;
+    padding: 0 0.5rem;
+  }
+
+  /* Carousel galeri (otomatis dibentuk dari foto-foto berurutan) */
+  .artikel-konten :global(.galeri-carousel) {
+    position: relative;
+    margin: 1.5rem -0.25rem;
+  }
+  .artikel-konten :global(.galeri-track) {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    border-radius: 0.75rem;
+  }
+  .artikel-konten :global(.galeri-track::-webkit-scrollbar) {
+    display: none;
+  }
+  .artikel-konten :global(.galeri-slide) {
+    flex: 0 0 100%;
+    scroll-snap-align: center;
+    padding: 0 0.25rem;
+  }
+  .artikel-konten :global(.galeri-slide img) {
+    margin: 0;
+  }
+  .artikel-konten :global(.galeri-nav) {
+    position: absolute;
+    top: calc(50% - 1rem);
+    width: 2rem;
+    height: 2rem;
+    border-radius: 9999px;
+    background: rgba(15, 23, 42, 0.55);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    line-height: 1;
+    border: none;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .artikel-konten :global(.galeri-nav:hover) {
+    background: rgba(15, 23, 42, 0.8);
+  }
+  .artikel-konten :global(.galeri-nav.galeri-prev) {
+    left: 0.5rem;
+  }
+  .artikel-konten :global(.galeri-nav.galeri-next) {
+    right: 0.5rem;
+  }
+  .artikel-konten :global(.galeri-dots) {
+    display: flex;
+    justify-content: center;
+    gap: 0.375rem;
+    margin-top: 0.625rem;
+  }
+  .artikel-konten :global(.galeri-dot) {
+    width: 0.4rem;
+    height: 0.4rem;
+    border-radius: 9999px;
+    background: #cbd5e1;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.15s;
+  }
+  .artikel-konten :global(.galeri-dot.aktif) {
+    background: #1d4ed8;
+    transform: scale(1.3);
+  }
+</style>
+
+<script>
+  function isNodeFotoTunggal(node: Element): HTMLImageElement | null {
+    if (node.tagName === "IMG") return node as HTMLImageElement;
+    if (node.tagName === "P" || node.tagName === "DIV") {
+      const isiNonKosong = Array.from(node.childNodes).filter(
+        (n) => !(n.nodeType === Node.TEXT_NODE && !n.textContent?.trim()),
+      );
+      if (isiNonKosong.length === 1 && isiNonKosong[0].nodeType === Node.ELEMENT_NODE && (isiNonKosong[0] as Element).tagName === "IMG") {
+        return isiNonKosong[0] as HTMLImageElement;
+      }
+    }
+    return null;
+  }
+
+  function bungkusFotoTunggal(img: HTMLImageElement, nodeAsli: Element) {
+    const figure = document.createElement("figure");
+    figure.className = "foto-tunggal";
+    const imgBaru = img.cloneNode(true) as HTMLImageElement;
+    figure.appendChild(imgBaru);
+    if (img.alt) {
+      const caption = document.createElement("figcaption");
+      caption.textContent = img.alt;
+      figure.appendChild(caption);
+    }
+    nodeAsli.replaceWith(figure);
+  }
+
+  function buatCarousel(imgs: HTMLImageElement[]): HTMLDivElement {
+    const wrapper = document.createElement("div");
+    wrapper.className = "galeri-carousel";
+
+    const track = document.createElement("div");
+    track.className = "galeri-track";
+
+    imgs.forEach((img) => {
+      const slide = document.createElement("div");
+      slide.className = "galeri-slide";
+      const imgBaru = img.cloneNode(true) as HTMLImageElement;
+      slide.appendChild(imgBaru);
+      if (img.alt) {
+        const caption = document.createElement("p");
+        caption.className = "galeri-caption";
+        caption.textContent = img.alt;
+        slide.appendChild(caption);
+      }
+      track.appendChild(slide);
+    });
+
+    wrapper.appendChild(track);
+
+    if (imgs.length > 1) {
+      const btnPrev = document.createElement("button");
+      btnPrev.type = "button";
+      btnPrev.className = "galeri-nav galeri-prev";
+      btnPrev.setAttribute("aria-label", "Foto sebelumnya");
+      btnPrev.textContent = "\u2039";
+
+      const btnNext = document.createElement("button");
+      btnNext.type = "button";
+      btnNext.className = "galeri-nav galeri-next";
+      btnNext.setAttribute("aria-label", "Foto selanjutnya");
+      btnNext.textContent = "\u203a";
+
+      const dots = document.createElement("div");
+      dots.className = "galeri-dots";
+      const dotEls: HTMLButtonElement[] = [];
+      imgs.forEach((_, i) => {
+        const dot = document.createElement("button");
+        dot.type = "button";
+        dot.className = "galeri-dot" + (i === 0 ? " aktif" : "");
+        dot.setAttribute("aria-label", `Ke foto ${i + 1}`);
+        dot.addEventListener("click", () => {
+          const slide = track.children[i] as HTMLElement;
+          track.scrollTo({ left: slide.offsetLeft, behavior: "smooth" });
+        });
+        dots.appendChild(dot);
+        dotEls.push(dot);
+      });
+
+      btnPrev.addEventListener("click", () => {
+        track.scrollBy({ left: -track.clientWidth, behavior: "smooth" });
+      });
+      btnNext.addEventListener("click", () => {
+        track.scrollBy({ left: track.clientWidth, behavior: "smooth" });
+      });
+
+      wrapper.appendChild(btnPrev);
+      wrapper.appendChild(btnNext);
+      wrapper.appendChild(dots);
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              const idx = Array.from(track.children).indexOf(entry.target);
+              dotEls.forEach((d, i) => d.classList.toggle("aktif", i === idx));
+            }
+          });
+        },
+        { root: track, threshold: 0.6 },
+      );
+      Array.from(track.children).forEach((slide) => observer.observe(slide));
+    }
+
+    return wrapper;
+  }
+
+  function prosesArtikel(article: Element) {
+    const children = Array.from(article.children);
+    let i = 0;
+    while (i < children.length) {
+      const run: { node: Element; img: HTMLImageElement }[] = [];
+      let j = i;
+      while (j < children.length) {
+        const img = isNodeFotoTunggal(children[j]);
+        if (!img) break;
+        run.push({ node: children[j], img });
+        j++;
+      }
+
+      if (run.length >= 2) {
+        const carousel = buatCarousel(run.map((r) => r.img));
+        run[0].node.replaceWith(carousel);
+        run.slice(1).forEach((r) => r.node.remove());
+        i = j;
+      } else if (run.length === 1) {
+        bungkusFotoTunggal(run[0].img, run[0].node);
+        i = j;
+      } else {
+        i++;
+      }
+    }
+  }
+
+  document.querySelectorAll(".artikel-konten").forEach(prosesArtikel);
+</script>
