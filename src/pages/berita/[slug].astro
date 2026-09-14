@@ -35,8 +35,30 @@ function formatTanggal(iso: string): string {
 }
 
 const kontenHtml = renderKontenBerita(berita.konten);
+
+const artikelJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Article",
+  headline: berita.judul,
+  description: berita.ringkasan,
+  image: berita.foto ? [berita.foto] : undefined,
+  datePublished: berita.created_at.replace(" ", "T") + "Z",
+  author: { "@type": "Organization", name: berita.penulis || "Yasuki" },
+  publisher: {
+    "@type": "Organization",
+    name: "Yasuki",
+    logo: { "@type": "ImageObject", url: "https://yasuki.site/images/logo.png" },
+  },
+  mainEntityOfPage: `https://yasuki.site/berita/${berita.slug}`,
+};
 ---
-<Layout title={`${berita.judul} — Yasuki`}>
+<Layout
+  title={`${berita.judul} — Yasuki`}
+  description={berita.ringkasan.slice(0, 160)}
+  ogImage={berita.foto || "/images/logo.png"}
+>
+  <script type="application/ld+json" set:html={JSON.stringify(artikelJsonLd)} />
+
   <!-- Strip breadcrumb - bukan sampul, cuma buat navigasi -->
   <section class="pt-24 pb-6 px-6 bg-blue-950">
     <div class="max-w-2xl mx-auto">

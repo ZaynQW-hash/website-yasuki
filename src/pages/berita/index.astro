@@ -24,7 +24,10 @@ function formatTanggal(iso: string): string {
   return new Date(iso.replace(" ", "T") + "Z").toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
 }
 ---
-<Layout title="Berita — Yasuki">
+<Layout
+  title="Berita — Yasuki"
+  description="Berita dan kegiatan terbaru Yayasan Sosial Umi Kulsum Indonesia (Yasuki) — santunan, pendidikan, keagamaan, dan program sosial lainnya di Purworejo."
+>
   <section class="relative pt-24 pb-16 px-6 text-center overflow-hidden">
     <img src="/images/program/bimbel-gratis.jpg" alt="Kegiatan Yasuki" class="absolute inset-0 w-full h-full object-cover" />
     <div class="absolute inset-0 bg-blue-950/85"></div>

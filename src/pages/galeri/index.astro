@@ -18,7 +18,10 @@ const { results: semuaFoto } = await db
 const kategoriList = ["Semua", ...new Set(semuaFoto.map((f) => f.kategori))];
 const fotoSampulHero = semuaFoto[0]?.foto || "/images/galeri/qurban-2025-4.jpg";
 ---
-<Layout title="Galeri — Yasuki">
+<Layout
+  title="Galeri — Yasuki"
+  description="Dokumentasi kegiatan Yayasan Sosial Umi Kulsum Indonesia (Yasuki) — santunan, kegiatan anak binaan, bakti sosial, dan momen kebaikan lainnya."
+>
   <section class="relative pt-24 pb-16 px-6 text-center overflow-hidden">
     <img src={fotoSampulHero} alt="Galeri Yasuki" class="absolute inset-0 w-full h-full object-cover" />
     <div class="absolute inset-0 bg-blue-950/85"></div>

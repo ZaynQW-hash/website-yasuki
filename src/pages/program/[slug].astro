@@ -42,7 +42,11 @@ const kontenHtml = program.konten
   ? renderKontenBerita(program.konten)
   : `<p class="mb-4 leading-relaxed">${program.deskripsi || program.headline}</p>`;
 ---
-<Layout title={`${program.nama} — Yasuki`}>
+<Layout
+  title={`${program.nama} — Yasuki`}
+  description={(program.deskripsi || program.headline).slice(0, 160)}
+  ogImage={program.foto || "/images/logo.png"}
+>
   <!-- Strip breadcrumb -->
   <section class="pt-24 pb-6 px-6 bg-blue-950">
     <div class="max-w-2xl mx-auto">
