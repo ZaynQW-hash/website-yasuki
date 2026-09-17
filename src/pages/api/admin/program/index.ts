@@ -22,7 +22,6 @@ export const POST: APIRoute = async ({ request }) => {
     const tampilkanProgress = formData.get("tampilkan_progress") === "1" ? 1 : 0;
     const status = formData.get("status") === "1" ? 1 : 0;
     const targetRaw = String(formData.get("target") || "").trim();
-    const terkumpulRaw = String(formData.get("terkumpul") || "").trim();
     const fotoFile = formData.get("foto");
 
     if (!nama || !slug || !kategori || !headline) {
@@ -33,7 +32,6 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     const target = targetRaw ? Number(targetRaw) : null;
-    const terkumpul = terkumpulRaw ? Number(terkumpulRaw) : null;
 
     let fotoUrl: string | null = null;
     if (fotoFile instanceof File && fotoFile.size > 0) {
@@ -63,7 +61,7 @@ export const POST: APIRoute = async ({ request }) => {
         hrefExternal,
         unggulan,
         target,
-        terkumpul,
+        null,
         tampilkanProgress,
         urutan,
         status,

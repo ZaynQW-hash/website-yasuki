@@ -19,7 +19,14 @@ interface ProgramRow {
 const db = env.yasuki_db;
 const { results: programRows } = await db
   .prepare(
-    "SELECT nama, slug, kategori, headline, foto, href_custom, href_external, target, terkumpul, tampilkan_progress FROM program WHERE status = 1 ORDER BY urutan ASC, id ASC",
+    `SELECT
+      p.nama, p.slug, p.kategori, p.headline, p.foto, p.href_custom, p.href_external, p.target,
+      COALESCE(pb.base_terkumpul, 0) + COALESCE((SELECT SUM(d.nominal) FROM donasi d WHERE d.status = 'terverifikasi' AND d.program = p.nama), 0) AS terkumpul,
+      p.tampilkan_progress
+     FROM program p
+     LEFT JOIN program_progress_base pb ON pb.program_id = p.id
+     WHERE p.status = 1
+     ORDER BY p.urutan ASC, p.id ASC`,
   )
   .all<ProgramRow>();
 
@@ -112,10 +119,22 @@ const programCards = programRows.map((p) => {
         <!-- Ditampilkan menggantikan form setelah submit berhasil. Detail lengkap (QRIS/rekening) ada di modal popup & kartu bawah. -->
         <div id="sukses-ringkas" class="hidden text-center py-4">
           <div class="text-3xl mb-2">✅</div>
-          <h3 class="text-blue-950 font-bold text-lg mb-2">Terima kasih!</h3>
-          <p class="text-slate-500 text-sm mb-4">Instruksi pembayaran (QRIS & rekening) sudah dikirim.</p>
-          <a href="#hasil-donasi-bawah" class="inline-block text-blue-800 font-medium text-sm hover:underline">
-            ↓ Lihat lagi instruksi pembayaran
+          <h3 class="text-blue-950 font-bold text-lg mb-2">Data donasi sudah tercatat</h3>
+          <p class="text-slate-500 text-sm mb-3">Silakan transfer sesuai instruksi, lalu upload bukti transfer di bawah supaya admin bisa memverifikasi.</p>
+          <p class="text-xs text-slate-400">Kode referensi: <strong id="kode-referensi-ringkas" class="font-mono text-slate-700"></strong></p>
+
+          <div id="upload-bukti-wrapper" class="hidden text-left mt-5 pt-5 border-t border-slate-200">
+            <h4 class="text-sm font-semibold text-blue-950 mb-1">Sudah transfer?</h4>
+            <p class="text-xs text-slate-500 mb-3">Upload screenshot/foto bukti transfer. Maksimal 5 MB.</p>
+            <form id="form-bukti" class="flex flex-col gap-3">
+              <input type="file" id="input-bukti" name="bukti" accept="image/jpeg,image/png,image/webp,application/pdf" required class="w-full text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-blue-50 file:px-3 file:py-2 file:text-blue-800 file:font-medium" />
+              <button type="submit" id="btn-upload-bukti" class="w-full bg-blue-800 hover:bg-blue-900 text-white font-medium py-2.5 rounded-lg text-sm disabled:opacity-60">Kirim Bukti Transfer</button>
+              <p id="bukti-status" class="text-sm hidden"></p>
+            </form>
+          </div>
+
+          <a href="#hasil-donasi-bawah" class="inline-block text-blue-800 font-medium text-sm hover:underline mt-4">
+            ↓ Lihat instruksi pembayaran
           </a>
         </div>
       </div>
@@ -148,7 +167,7 @@ const programCards = programRows.map((p) => {
                 {p.kategori}
               </span>
               <p class="text-blue-950 text-sm font-semibold leading-snug mb-2 flex-1">{p.nama}</p>
-              {p.terkumpul ? (
+              {p.terkumpul !== null ? (
                 <div>
                   <div class="w-full bg-slate-200 rounded-full h-1.5 mb-1.5">
                     <div class="bg-amber-400 h-1.5 rounded-full" style={`width: ${p.persen}%`}></div>
@@ -254,7 +273,7 @@ const programCards = programRows.map((p) => {
               icon.textContent = original;
               icon.classList.remove('bg-emerald-600', 'text-white', 'border-emerald-600');
             }, 1500);
-          } catch (err) {
+          } catch {
             icon.textContent = 'Gagal';
           }
         });
@@ -268,6 +287,12 @@ const programCards = programRows.map((p) => {
     const hasilBawahSection = document.getElementById('hasil-donasi-bawah') as HTMLDivElement;
     const bawahKonten = document.getElementById('bawah-konten-hasil') as HTMLDivElement;
     const suksesRingkas = document.getElementById('sukses-ringkas') as HTMLDivElement;
+    const kodeRingkas = document.getElementById('kode-referensi-ringkas') as HTMLElement;
+    const uploadBuktiWrapper = document.getElementById('upload-bukti-wrapper') as HTMLDivElement;
+    const formBukti = document.getElementById('form-bukti') as HTMLFormElement;
+    const inputBukti = document.getElementById('input-bukti') as HTMLInputElement;
+    const btnUploadBukti = document.getElementById('btn-upload-bukti') as HTMLButtonElement;
+    const buktiStatus = document.getElementById('bukti-status') as HTMLParagraphElement;
 
     let kodeReferensiTerakhir = '';
 
@@ -296,11 +321,10 @@ const programCards = programRows.map((p) => {
       bawahKonten.appendChild(isiTemplate(kodeReferensiTerakhir));
       attachCopyButtons(bawahKonten);
       hasilBawahSection.classList.remove('hidden');
+      uploadBuktiWrapper?.classList.remove('hidden');
     }
 
     btnCloseModal?.addEventListener('click', tutupModalDanPindahKeBawah);
-
-    // Klik area gelap di luar kartu modal juga menutup modal
     document.getElementById('modal-backdrop')?.addEventListener('click', tutupModalDanPindahKeBawah);
 
     const form = document.getElementById('form-donasi') as HTMLFormElement;
@@ -312,7 +336,7 @@ const programCards = programRows.map((p) => {
       e.preventDefault();
       formError.classList.add('hidden');
       btnSubmit.disabled = true;
-      btnSubmit.textContent = 'Mengirim...';
+      btnSubmit.textContent = 'Mencatat...';
 
       const formData = new FormData(form);
       const payload = {
@@ -341,14 +365,56 @@ const programCards = programRows.map((p) => {
         }
 
         kodeReferensiTerakhir = result.kode_referensi;
+        kodeRingkas.textContent = kodeReferensiTerakhir;
         formWrapper.classList.add('hidden');
         suksesRingkas.classList.remove('hidden');
+        uploadBuktiWrapper.classList.remove('hidden');
+        localStorage.setItem('yasuki_donasi_terakhir', kodeReferensiTerakhir);
         bukaModal(kodeReferensiTerakhir);
-      } catch (err) {
+      } catch {
         formError.textContent = 'Gagal terhubung ke server. Periksa koneksi internet kamu.';
         formError.classList.remove('hidden');
         btnSubmit.disabled = false;
         btnSubmit.textContent = 'Kirim';
+      }
+    });
+
+    formBukti?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      buktiStatus.classList.add('hidden');
+      const file = inputBukti.files?.[0];
+      if (!file) return;
+      if (file.size > 5 * 1024 * 1024) {
+        buktiStatus.textContent = 'Ukuran file maksimal 5 MB.';
+        buktiStatus.className = 'text-sm text-red-600';
+        return;
+      }
+      btnUploadBukti.disabled = true;
+      btnUploadBukti.textContent = 'Mengunggah...';
+
+      const fd = new FormData();
+      fd.append('kode_referensi', kodeReferensiTerakhir);
+      fd.append('bukti', file);
+
+      try {
+        const res = await fetch('/api/donasi/bukti', { method: 'POST', body: fd });
+        const result = await res.json();
+        buktiStatus.textContent = result.message || result.error || 'Terjadi kesalahan.';
+        buktiStatus.className = res.ok ? 'text-sm text-emerald-700' : 'text-sm text-red-600';
+        buktiStatus.classList.remove('hidden');
+        if (res.ok) {
+          btnUploadBukti.textContent = 'Bukti Terkirim ✓';
+          inputBukti.disabled = true;
+        } else {
+          btnUploadBukti.disabled = false;
+          btnUploadBukti.textContent = 'Kirim Bukti Transfer';
+        }
+      } catch {
+        buktiStatus.textContent = 'Gagal terhubung ke server. Coba lagi.';
+        buktiStatus.className = 'text-sm text-red-600';
+        buktiStatus.classList.remove('hidden');
+        btnUploadBukti.disabled = false;
+        btnUploadBukti.textContent = 'Kirim Bukti Transfer';
       }
     });
   </script>

@@ -38,7 +38,6 @@ export const PUT: APIRoute = async ({ params, request }) => {
     const tampilkanProgress = formData.get("tampilkan_progress") === "1" ? 1 : 0;
     const status = formData.get("status") === "1" ? 1 : 0;
     const targetRaw = String(formData.get("target") || "").trim();
-    const terkumpulRaw = String(formData.get("terkumpul") || "").trim();
     const fotoFile = formData.get("foto");
 
     if (!nama || !slug || !kategori || !headline) {
@@ -49,7 +48,6 @@ export const PUT: APIRoute = async ({ params, request }) => {
     }
 
     const target = targetRaw ? Number(targetRaw) : null;
-    const terkumpul = terkumpulRaw ? Number(terkumpulRaw) : null;
 
     let fotoUrl = existing.foto;
     if (fotoFile instanceof File && fotoFile.size > 0) {
@@ -64,7 +62,7 @@ export const PUT: APIRoute = async ({ params, request }) => {
       .prepare(
         `UPDATE program SET
           nama = ?, slug = ?, kategori = ?, headline = ?, deskripsi = ?, konten = ?, foto = ?,
-          href_custom = ?, href_external = ?, unggulan = ?, target = ?, terkumpul = ?,
+          href_custom = ?, href_external = ?, unggulan = ?, target = ?,
           tampilkan_progress = ?, status = ?
          WHERE id = ?`,
       )
@@ -80,7 +78,6 @@ export const PUT: APIRoute = async ({ params, request }) => {
         hrefExternal,
         unggulan,
         target,
-        terkumpul,
         tampilkanProgress,
         status,
         id,

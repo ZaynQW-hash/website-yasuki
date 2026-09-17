@@ -17,56 +17,53 @@ interface DonasiRow {
   status: string;
   created_at: string;
   verified_at: string | null;
+  bukti_id: number | null;
+  bukti_mime: string | null;
 }
 
 const PER_PAGE = 20;
 const page = Math.max(1, parseInt(Astro.url.searchParams.get("page") || "1", 10) || 1);
 const offset = (page - 1) * PER_PAGE;
-
 const db = env.yasuki_db;
 
-const whereClause = statusFilter !== "semua" ? " WHERE status = ?1" : "";
+const whereClause = statusFilter !== "semua" ? " WHERE d.status = ?1" : "";
 const countBindings: string[] = statusFilter !== "semua" ? [statusFilter] : [];
 const countStmt = countBindings.length
-  ? db.prepare(`SELECT COUNT(*) as total FROM donasi${whereClause}`).bind(...countBindings)
-  : db.prepare(`SELECT COUNT(*) as total FROM donasi${whereClause}`);
+  ? db.prepare(`SELECT COUNT(*) as total FROM donasi d${whereClause}`).bind(...countBindings)
+  : db.prepare(`SELECT COUNT(*) as total FROM donasi d${whereClause}`);
 const { results: countRows } = await countStmt.all<{ total: number }>();
 const totalItems = countRows[0]?.total || 0;
 const totalPages = Math.max(1, Math.ceil(totalItems / PER_PAGE));
 
-let query =
-  "SELECT id, kode_referensi, nama, whatsapp, program, nominal, pesan, tampilkan_nama, status, created_at, verified_at FROM donasi";
+let query = `
+  SELECT
+    d.id, d.kode_referensi, d.nama, d.whatsapp, d.program, d.nominal,
+    d.pesan, d.tampilkan_nama, d.status, d.created_at, d.verified_at,
+    b.id AS bukti_id, b.mime_type AS bukti_mime
+  FROM donasi d
+  LEFT JOIN donasi_bukti_transfer b ON b.donasi_id = d.id
+`;
 const bindings: (string | number)[] = [];
-
 if (statusFilter !== "semua") {
-  query += " WHERE status = ?";
+  query += " WHERE d.status = ?";
   bindings.push(statusFilter);
 }
-
-query += " ORDER BY created_at DESC LIMIT ? OFFSET ?";
+query += " ORDER BY d.created_at DESC LIMIT ? OFFSET ?";
 bindings.push(PER_PAGE, offset);
-
-const stmt = db.prepare(query).bind(...bindings);
-const { results } = await stmt.all<DonasiRow>();
+const { results } = await db.prepare(query).bind(...bindings).all<DonasiRow>();
 
 function formatRupiah(n: number): string {
   return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(n);
 }
-
 function formatTanggal(iso: string): string {
-  return new Date(iso.replace(" ", "T") + "Z").toLocaleString("id-ID", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  });
+  return new Date(iso.replace(" ", "T") + "Z").toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" });
 }
-
 const statusBadgeClass: Record<string, string> = {
   pending: "bg-amber-100 text-amber-800",
   terverifikasi: "bg-green-100 text-green-800",
   ditolak: "bg-red-100 text-red-800",
   kadaluarsa: "bg-slate-200 text-slate-600",
 };
-
 const filters = [
   { key: "semua", label: "Semua" },
   { key: "pending", label: "Pending" },
@@ -76,24 +73,21 @@ const filters = [
 ---
 
 <AdminLayout title="Kelola Donasi — Yasuki" admin={admin}>
-  <div class="max-w-6xl mx-auto">
-    <h1 class="text-xl font-bold text-slate-800 mb-6">Kelola Donasi</h1>
+  <div class="max-w-7xl mx-auto">
+    <div class="flex items-start justify-between gap-4 mb-6">
+      <div>
+        <h1 class="text-xl font-bold text-slate-800">Kelola Donasi</h1>
+        <p class="text-sm text-slate-500 mt-1">Verifikasi hanya setelah bukti transfer terlihat dan nominal cocok.</p>
+      </div>
+      <div class="text-xs text-slate-400 text-right">{totalItems} total donasi</div>
+    </div>
 
     <div class="flex flex-wrap gap-2 mb-4">
-      {
-        filters.map((f) => (
-          <a
-            href={`/admin/donasi?status=${f.key}&page=1`}
-            class={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-              statusFilter === f.key
-                ? "bg-blue-800 text-white"
-                : "bg-white text-slate-600 border border-slate-300 hover:bg-slate-100"
-            }`}
-          >
-            {f.label}
-          </a>
-        ))
-      }
+      {filters.map((f) => (
+        <a href={`/admin/donasi?status=${f.key}&page=1`} class={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+          statusFilter === f.key ? "bg-blue-800 text-white" : "bg-white text-slate-600 border border-slate-300 hover:bg-slate-100"
+        }`}>{f.label}</a>
+      ))}
     </div>
 
     <div class="bg-white rounded-xl shadow-sm overflow-hidden">
@@ -103,115 +97,91 @@ const filters = [
             <tr>
               <th class="px-4 py-3 font-medium">Tanggal</th>
               <th class="px-4 py-3 font-medium">Nama</th>
-              <th class="px-4 py-3 font-medium">WhatsApp</th>
               <th class="px-4 py-3 font-medium">Program</th>
               <th class="px-4 py-3 font-medium">Nominal</th>
+              <th class="px-4 py-3 font-medium">Bukti</th>
               <th class="px-4 py-3 font-medium">Kode Ref</th>
               <th class="px-4 py-3 font-medium">Status</th>
               <th class="px-4 py-3 font-medium">Aksi</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100">
-            {
-              results.length === 0 && (
-                <tr>
-                  <td colspan="8" class="px-4 py-8 text-center text-slate-400">
-                    Belum ada data donasi.
-                  </td>
-                </tr>
-              )
-            }
-            {
-              results.map((d) => (
-                <tr>
-                  <td class="px-4 py-3 whitespace-nowrap text-slate-600">{formatTanggal(d.created_at)}</td>
-                  <td class="px-4 py-3 text-slate-800 font-medium">
-                    {d.nama}
-                    {d.tampilkan_nama === 0 && <span class="text-xs text-slate-400 block">(minta disembunyikan)</span>}
-                  </td>
-                  <td class="px-4 py-3">
-                    <a href={`https://wa.me/${d.whatsapp.replace(/\D/g, "")}`} target="_blank" class="text-blue-700 hover:underline">
-                      {d.whatsapp}
+            {results.length === 0 && (
+              <tr><td colspan="8" class="px-4 py-8 text-center text-slate-400">Belum ada data donasi.</td></tr>
+            )}
+            {results.map((d) => {
+              const legacyReference = /^YSK-\d{4}-[A-Z0-9]{4}$/.test(d.kode_referensi);
+              const canVerify = !!d.bukti_id || legacyReference;
+              return (
+              <tr>
+                <td class="px-4 py-3 whitespace-nowrap text-slate-600">{formatTanggal(d.created_at)}</td>
+                <td class="px-4 py-3 text-slate-800 font-medium">
+                  {d.nama}
+                  {d.tampilkan_nama === 0 && <span class="text-xs text-slate-400 block">(disembunyikan publik)</span>}
+                  <a href={`https://wa.me/${d.whatsapp.replace(/\D/g, "")}`} target="_blank" rel="noreferrer" class="text-xs text-blue-700 hover:underline block mt-1">Chat WhatsApp ↗</a>
+                </td>
+                <td class="px-4 py-3 text-slate-600">{d.program}</td>
+                <td class="px-4 py-3 font-semibold text-slate-800 whitespace-nowrap">{formatRupiah(d.nominal)}</td>
+                <td class="px-4 py-3">
+                  {d.bukti_id ? (
+                    <a href={`/api/admin/donasi/${d.id}/bukti`} target="_blank" rel="noreferrer" class="inline-flex items-center gap-1 text-xs font-medium text-blue-700 hover:underline">
+                      Lihat bukti ↗
                     </a>
-                  </td>
-                  <td class="px-4 py-3 text-slate-600">{d.program}</td>
-                  <td class="px-4 py-3 font-semibold text-slate-800">{formatRupiah(d.nominal)}</td>
-                  <td class="px-4 py-3 text-slate-500 font-mono text-xs">{d.kode_referensi}</td>
-                  <td class="px-4 py-3">
-                    <span class={`px-2 py-1 rounded-full text-xs font-medium ${statusBadgeClass[d.status] || "bg-slate-100 text-slate-600"}`}>
-                      {d.status}
-                    </span>
-                  </td>
-                  <td class="px-4 py-3 whitespace-nowrap">
-                    {d.status === "pending" && (
-                      <div class="flex gap-2">
-                        <button class="btn-verify text-xs px-2 py-1 rounded-lg bg-green-600 hover:bg-green-700 text-white" data-id={d.id}>
-                          Verifikasi
-                        </button>
-                        <button class="btn-reject text-xs px-2 py-1 rounded-lg bg-red-100 hover:bg-red-200 text-red-700" data-id={d.id}>
-                          Tolak
-                        </button>
-                      </div>
-                    )}
-                  </td>
-                </tr>
-              ))
-            }
+                  ) : (
+                    <span class="text-xs text-red-500">Belum ada</span>
+                  )}
+                </td>
+                <td class="px-4 py-3 text-slate-500 font-mono text-xs whitespace-nowrap">{d.kode_referensi}</td>
+                <td class="px-4 py-3">
+                  <span class={`px-2 py-1 rounded-full text-xs font-medium ${statusBadgeClass[d.status] || "bg-slate-100 text-slate-600"}`}>{d.status}</span>
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap">
+                  {d.status === "pending" && (
+                    <div class="flex flex-wrap gap-2">
+                      <button class={`btn-verify text-xs px-2.5 py-1 rounded-lg text-white ${canVerify ? "bg-green-600 hover:bg-green-700" : "bg-slate-300 cursor-not-allowed"}`} data-id={d.id} disabled={!canVerify} title={canVerify ? "Verifikasi donasi" : "Bukti transfer belum ada"}>
+                        Verifikasi
+                      </button>
+                      <button class="btn-reject text-xs px-2.5 py-1 rounded-lg bg-red-100 hover:bg-red-200 text-red-700" data-id={d.id}>Tolak</button>
+                    </div>
+                  )}
+                </td>
+              </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
     </div>
 
-    {
-      totalPages > 1 && (
-        <div class="flex items-center justify-between mt-4 text-sm text-slate-500">
-          <p>
-            Halaman {page} dari {totalPages} ({totalItems} donasi)
-          </p>
-          <div class="flex gap-2">
-            <a
-              href={page > 1 ? `/admin/donasi?status=${statusFilter}&page=${page - 1}` : undefined}
-              aria-disabled={page <= 1}
-              class={`px-3 py-1.5 rounded-lg border text-sm font-medium ${
-                page <= 1
-                  ? "border-slate-200 text-slate-300 pointer-events-none"
-                  : "border-slate-300 text-slate-600 hover:bg-slate-100"
-              }`}
-            >
-              ← Sebelumnya
-            </a>
-            <a
-              href={page < totalPages ? `/admin/donasi?status=${statusFilter}&page=${page + 1}` : undefined}
-              aria-disabled={page >= totalPages}
-              class={`px-3 py-1.5 rounded-lg border text-sm font-medium ${
-                page >= totalPages
-                  ? "border-slate-200 text-slate-300 pointer-events-none"
-                  : "border-slate-300 text-slate-600 hover:bg-slate-100"
-              }`}
-            >
-              Berikutnya →
-            </a>
-          </div>
+    {totalPages > 1 && (
+      <div class="flex items-center justify-between mt-4 text-sm text-slate-500">
+        <p>Halaman {page} dari {totalPages} ({totalItems} donasi)</p>
+        <div class="flex gap-2">
+          <a href={page > 1 ? `/admin/donasi?status=${statusFilter}&page=${page - 1}` : undefined} class={`px-3 py-1.5 rounded-lg border text-sm font-medium ${page <= 1 ? "border-slate-200 text-slate-300 pointer-events-none" : "border-slate-300 text-slate-600 hover:bg-slate-100"}`}>← Sebelumnya</a>
+          <a href={page < totalPages ? `/admin/donasi?status=${statusFilter}&page=${page + 1}` : undefined} class={`px-3 py-1.5 rounded-lg border text-sm font-medium ${page >= totalPages ? "border-slate-200 text-slate-300 pointer-events-none" : "border-slate-300 text-slate-600 hover:bg-slate-100"}`}>Berikutnya →</a>
         </div>
-      )
-    }
+      </div>
+    )}
   </div>
 </AdminLayout>
 
 <script>
   async function updateStatus(id: string, action: "verify" | "reject") {
     const res = await fetch(`/api/admin/donasi/${id}/${action}`, { method: "POST" });
+    const data = await res.json().catch(() => ({}));
     if (res.ok) {
       window.location.reload();
     } else {
-      alert("Gagal memperbarui status, coba lagi.");
+      alert(data.error || "Gagal memperbarui status, coba lagi.");
     }
   }
 
   document.querySelectorAll(".btn-verify").forEach((btn) => {
     btn.addEventListener("click", () => {
-      const id = (btn as HTMLElement).dataset.id!;
-      if (confirm("Tandai donasi ini sebagai terverifikasi?")) updateStatus(id, "verify");
+      const el = btn as HTMLButtonElement;
+      const id = el.dataset.id!;
+      if (el.disabled) return;
+      if (confirm("Setelah diverifikasi, nominal ini akan dihitung otomatis ke progress program. Lanjutkan?")) updateStatus(id, "verify");
     });
   });
 

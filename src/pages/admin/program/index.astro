@@ -21,7 +21,12 @@ interface ProgramRow {
 const db = env.yasuki_db;
 const { results } = await db
   .prepare(
-    "SELECT id, nama, slug, kategori, foto, unggulan, target, terkumpul, tampilkan_progress, status, urutan FROM program ORDER BY urutan ASC, id ASC",
+    `SELECT program.id, program.nama, program.slug, program.kategori, program.foto, program.unggulan, program.target,
+            COALESCE(pb.base_terkumpul, 0) + COALESCE((SELECT SUM(d.nominal) FROM donasi d WHERE d.status = 'terverifikasi' AND d.program = program.nama), 0) AS terkumpul,
+            program.tampilkan_progress, program.status, program.urutan
+     FROM program
+     LEFT JOIN program_progress_base pb ON pb.program_id = program.id
+     ORDER BY urutan ASC, id ASC`,
   )
   .all<ProgramRow>();
 
@@ -39,7 +44,7 @@ function formatRupiah(n: number | null): string {
         + Tambah Program
       </a>
     </div>
-    <p class="text-xs text-slate-400 mb-6">Geser baris pakai ikon ⠿ di kiri untuk ubah urutan tampil di website.</p>
+    <p class="text-xs text-slate-400 mb-6">Progress dihitung otomatis dari donasi yang sudah terverifikasi. Geser baris pakai ikon ⠿ untuk ubah urutan tampil di website.</p>
 
     <div class="bg-white rounded-xl shadow-sm overflow-hidden">
       <div class="overflow-x-auto">

@@ -25,7 +25,12 @@ interface ProgramDetail {
 const db = env.yasuki_db;
 const program = await db
   .prepare(
-    "SELECT id, nama, slug, kategori, headline, deskripsi, konten, foto, target, terkumpul, tampilkan_progress, status FROM program WHERE slug = ?",
+    `SELECT id, nama, slug, kategori, headline, deskripsi, konten, foto, target,
+            COALESCE(pb.base_terkumpul, 0) + COALESCE((SELECT SUM(d.nominal) FROM donasi d WHERE d.status = 'terverifikasi' AND d.program = program.nama), 0) AS terkumpul,
+            tampilkan_progress, status
+     FROM program
+     LEFT JOIN program_progress_base pb ON pb.program_id = program.id
+     WHERE program.slug = ?`,
   )
   .bind(slug)
   .first<ProgramDetail>();
