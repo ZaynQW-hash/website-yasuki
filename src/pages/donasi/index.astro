@@ -131,18 +131,21 @@ const programCards = programRows.map((p) => {
               <input type="file" id="input-bukti" name="bukti" accept="image/jpeg,image/png,image/webp,application/pdf" required class="w-full text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-blue-50 file:px-3 file:py-2 file:text-blue-800 file:font-medium" />
               <button type="submit" id="btn-upload-bukti" class="w-full bg-blue-800 hover:bg-blue-900 text-white font-medium py-2.5 rounded-lg text-sm disabled:opacity-60">Kirim Bukti Transfer</button>
               <p id="bukti-status" class="text-sm hidden"></p>
-              <a
-                id="btn-konfirmasi-wa"
-                href="#"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="hidden w-full items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2.5 rounded-lg text-sm transition"
-              >
-                <span aria-hidden="true">💬</span> Konfirmasi Transfer via WhatsApp ↗
-              </a>
-              <p id="wa-confirmation-note" class="hidden text-[11px] text-slate-400 text-center">
-                Setelah tombol dibuka, tekan Kirim di WhatsApp untuk mengirim konfirmasi ke Kantor Pusat Yasuki.
-              </p>
+              <div id="wa-confirmation-box" class="hidden mt-1 rounded-lg border border-emerald-200 bg-emerald-50 p-3">
+                <p class="text-sm font-semibold text-emerald-800 mb-1">Bukti transfer sudah terkirim ✓</p>
+                <p class="text-xs text-emerald-700 mb-3">Langkah terakhir: kirim konfirmasi ke admin melalui WhatsApp agar tim mudah menemukan transaksi ini.</p>
+                <a
+                  id="btn-konfirmasi-wa"
+                  href="#"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="w-full inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 rounded-lg text-sm transition"
+                >
+                  <span aria-hidden="true">💬</span> Konfirmasi Transfer via WhatsApp ↗
+                </a>
+                <p id="wa-confirmation-note" class="text-[11px] text-emerald-700/80 text-center mt-2">Setelah WhatsApp terbuka, tekan Kirim.</p>
+              </div>
+
             </form>
           </div>
 
@@ -307,7 +310,7 @@ const programCards = programRows.map((p) => {
     const btnUploadBukti = document.getElementById('btn-upload-bukti') as HTMLButtonElement;
     const buktiStatus = document.getElementById('bukti-status') as HTMLParagraphElement;
     const btnKonfirmasiWa = document.getElementById('btn-konfirmasi-wa') as HTMLAnchorElement;
-    const waConfirmationNote = document.getElementById('wa-confirmation-note') as HTMLParagraphElement;
+    const waConfirmationBox = document.getElementById('wa-confirmation-box') as HTMLDivElement;
 
     let kodeReferensiTerakhir = '';
     let dataDonasiTerakhir = {
@@ -406,6 +409,26 @@ const programCards = programRows.map((p) => {
       }
     });
 
+    try {
+      const stored = JSON.parse(localStorage.getItem('yasuki_donasi_bukti_terkirim') || 'null');
+      if (stored?.kode_referensi && stored?.whatsapp) {
+        const nominalFormatted = new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(Number(stored.nominal || 0));
+        const waMessage = [
+          "Assalamu'alaikum Admin YASUKI,",
+          '',
+          'Saya sudah melakukan transfer donasi dan mengirim bukti transfer melalui website.',
+          `Kode donasi: ${stored.kode_referensi}`,
+          `Nama: ${stored.nama || ''}`,
+          `Program: ${stored.program || ''}`,
+          `Nominal: Rp${nominalFormatted}`,
+          '',
+          'Mohon dibantu konfirmasi penerimaan donasi. Terima kasih.',
+        ].join('\n');
+        btnKonfirmasiWa.href = `https://wa.me/${WHATSAPP_KANTOR}?text=${encodeURIComponent(waMessage)}`;
+        waConfirmationBox.classList.remove('hidden');
+      }
+    } catch {}
+
     formBukti?.addEventListener('submit', async (e) => {
       e.preventDefault();
       buktiStatus.classList.add('hidden');
@@ -447,9 +470,8 @@ const programCards = programRows.map((p) => {
           ].join('\n');
 
           btnKonfirmasiWa.href = `https://wa.me/${WHATSAPP_KANTOR}?text=${encodeURIComponent(waMessage)}`;
-          btnKonfirmasiWa.classList.remove('hidden');
-          btnKonfirmasiWa.classList.add('flex');
-          waConfirmationNote.classList.remove('hidden');
+          waConfirmationBox.classList.remove('hidden');
+          localStorage.setItem('yasuki_donasi_bukti_terkirim', JSON.stringify({ ...dataDonasiTerakhir, kode_referensi: kodeReferensiTerakhir }));
         } else {
           btnUploadBukti.disabled = false;
           btnUploadBukti.textContent = 'Kirim Bukti Transfer';

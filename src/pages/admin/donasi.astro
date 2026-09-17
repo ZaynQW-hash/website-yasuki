@@ -112,7 +112,7 @@ const filters = [
               const canVerify = !!d.bukti_id || legacyReference;
               return (
               <tr>
-                <td class="px-4 py-3 whitespace-nowrap text-slate-600">{formatTanggal(d.created_at)}</td>
+                <td class="px-4 py-3 whitespace-nowrap text-slate-600">{formatTanggalWaktu(d.created_at)}</td>
                 <td class="px-4 py-3 text-slate-800 font-medium">
                   {d.nama}
                   {d.tampilkan_nama === 0 && <span class="text-xs text-slate-400 block">(disembunyikan publik)</span>}
