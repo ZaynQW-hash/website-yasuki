@@ -124,14 +124,14 @@ const programCards = programRows.map((p) => {
           <p class="text-slate-500 text-sm mb-3">Silakan transfer sesuai instruksi, lalu upload bukti transfer di bawah supaya admin bisa memverifikasi.</p>
           <p class="text-xs text-slate-400">Kode referensi: <strong id="kode-referensi-ringkas" class="font-mono text-slate-700"></strong></p>
 
-          <div id="upload-bukti-wrapper" class="hidden text-left mt-5 pt-5 border-t border-slate-200">
+          <div id="upload-bukti-wrapper" data-whatsapp-cs={WHATSAPP_KANTOR} class="hidden text-left mt-5 pt-5 border-t border-slate-200">
             <h4 class="text-sm font-semibold text-blue-950 mb-1">Sudah transfer?</h4>
             <p class="text-xs text-slate-500 mb-3">Upload screenshot/foto bukti transfer. Maksimal 5 MB.</p>
             <form id="form-bukti" class="flex flex-col gap-3">
               <input type="file" id="input-bukti" name="bukti" accept="image/jpeg,image/png,image/webp,application/pdf" required class="w-full text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-blue-50 file:px-3 file:py-2 file:text-blue-800 file:font-medium" />
               <button type="submit" id="btn-upload-bukti" class="w-full bg-blue-800 hover:bg-blue-900 text-white font-medium py-2.5 rounded-lg text-sm disabled:opacity-60">Kirim Bukti Transfer</button>
               <p id="bukti-status" class="text-sm hidden"></p>
-              <div id="wa-confirmation-box" class="hidden mt-1 rounded-lg border border-emerald-200 bg-emerald-50 p-3">
+              <div id="wa-confirmation-box" style="display:none" class="mt-1 rounded-lg border border-emerald-200 bg-emerald-50 p-3">
                 <p class="text-sm font-semibold text-emerald-800 mb-1">Bukti transfer sudah terkirim ✓</p>
                 <p class="text-xs text-emerald-700 mb-3">Langkah terakhir: kirim konfirmasi ke admin melalui WhatsApp agar tim mudah menemukan transaksi ini.</p>
                 <a
@@ -312,6 +312,31 @@ const programCards = programRows.map((p) => {
     const btnKonfirmasiWa = document.getElementById('btn-konfirmasi-wa') as HTMLAnchorElement;
     const waConfirmationBox = document.getElementById('wa-confirmation-box') as HTMLDivElement;
 
+    const whatsappCsNumber = String(uploadBuktiWrapper.dataset.whatsappCs || '').replace(/\D/g, '');
+
+    function tampilkanTombolWa(data: {
+      kode_referensi: string;
+      nama: string;
+      program: string;
+      nominal: number;
+    }) {
+      const nominalFormatted = new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(Number(data.nominal || 0));
+      const waMessage = [
+        "Assalamu'alaikum Admin YASUKI,",
+        '',
+        'Saya sudah melakukan transfer donasi dan mengirim bukti transfer melalui website.',
+        `Kode donasi: ${data.kode_referensi}`,
+        `Nama: ${data.nama}`,
+        `Program: ${data.program}`,
+        `Nominal: Rp${nominalFormatted}`,
+        '',
+        'Mohon dibantu konfirmasi penerimaan donasi. Terima kasih.',
+      ].join('\n');
+
+      btnKonfirmasiWa.href = `https://wa.me/${whatsappCsNumber}?text=${encodeURIComponent(waMessage)}`;
+      waConfirmationBox.style.display = 'block';
+    }
+
     let kodeReferensiTerakhir = '';
     let dataDonasiTerakhir = {
       nama: '',
@@ -412,23 +437,14 @@ const programCards = programRows.map((p) => {
     try {
       const stored = JSON.parse(localStorage.getItem('yasuki_donasi_bukti_terkirim') || 'null');
       if (stored?.kode_referensi && stored?.whatsapp) {
-        const nominalFormatted = new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(Number(stored.nominal || 0));
-        const waMessage = [
-          "Assalamu'alaikum Admin YASUKI,",
-          '',
-          'Saya sudah melakukan transfer donasi dan mengirim bukti transfer melalui website.',
-          `Kode donasi: ${stored.kode_referensi}`,
-          `Nama: ${stored.nama || ''}`,
-          `Program: ${stored.program || ''}`,
-          `Nominal: Rp${nominalFormatted}`,
-          '',
-          'Mohon dibantu konfirmasi penerimaan donasi. Terima kasih.',
-        ].join('\n');
-        btnKonfirmasiWa.href = `https://wa.me/${WHATSAPP_KANTOR}?text=${encodeURIComponent(waMessage)}`;
-        waConfirmationBox.classList.remove('hidden');
+        tampilkanTombolWa({
+          kode_referensi: String(stored.kode_referensi),
+          nama: String(stored.nama || ''),
+          program: String(stored.program || ''),
+          nominal: Number(stored.nominal || 0),
+        });
       }
     } catch {}
-
     formBukti?.addEventListener('submit', async (e) => {
       e.preventDefault();
       buktiStatus.classList.add('hidden');
@@ -456,21 +472,12 @@ const programCards = programRows.map((p) => {
           btnUploadBukti.textContent = 'Bukti Terkirim ✓';
           inputBukti.disabled = true;
 
-          const nominalFormatted = new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(dataDonasiTerakhir.nominal);
-          const waMessage = [
-            "Assalamu'alaikum Admin YASUKI,",
-            '',
-            'Saya sudah melakukan transfer donasi dan mengirim bukti transfer melalui website.',
-            `Kode donasi: ${kodeReferensiTerakhir}`,
-            `Nama: ${dataDonasiTerakhir.nama}`,
-            `Program: ${dataDonasiTerakhir.program}`,
-            `Nominal: Rp${nominalFormatted}`,
-            '',
-            'Mohon dibantu konfirmasi penerimaan donasi. Terima kasih.',
-          ].join('\n');
-
-          btnKonfirmasiWa.href = `https://wa.me/${WHATSAPP_KANTOR}?text=${encodeURIComponent(waMessage)}`;
-          waConfirmationBox.classList.remove('hidden');
+          tampilkanTombolWa({
+            kode_referensi: kodeReferensiTerakhir,
+            nama: dataDonasiTerakhir.nama,
+            program: dataDonasiTerakhir.program,
+            nominal: dataDonasiTerakhir.nominal,
+          });
           localStorage.setItem('yasuki_donasi_bukti_terkirim', JSON.stringify({ ...dataDonasiTerakhir, kode_referensi: kodeReferensiTerakhir }));
         } else {
           btnUploadBukti.disabled = false;
