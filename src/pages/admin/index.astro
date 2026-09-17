@@ -1,6 +1,7 @@
 ---
 import AdminLayout from "../../layouts/AdminLayout.astro";
 import { env } from "cloudflare:workers";
+import { formatTanggal } from '../../lib/date';
 import { bolehAksesModul } from "../../lib/auth";
 
 const admin = Astro.locals.admin;
@@ -69,9 +70,6 @@ function formatRupiah(n: number): string {
   return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(n);
 }
 
-function formatTanggal(iso: string): string {
-  return new Date(iso.replace(" ", "T") + "Z").toLocaleDateString("id-ID", { day: "numeric", month: "short" });
-}
 
 const stats = [
   bisaDonasi && {

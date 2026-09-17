@@ -2,6 +2,7 @@
 import Layout from '../../layouts/Layout.astro';
 import Breadcrumb from '../../components/Breadcrumb.astro';
 import { env } from "cloudflare:workers";
+import { formatTanggal } from '../../lib/date';
 
 interface BeritaRow {
   id: number;
@@ -20,9 +21,6 @@ const { results } = await db
 
 const [featured, ...sisanya] = results;
 
-function formatTanggal(iso: string): string {
-  return new Date(iso.replace(" ", "T") + "Z").toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
-}
 ---
 <Layout
   title="Berita — Yasuki"

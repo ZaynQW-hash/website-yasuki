@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { env } from "cloudflare:workers";
+import { formatTanggal } from '../lib/date';
 
 const stats = [
   { label: "Relawan", value: "32" },
@@ -32,9 +33,6 @@ const { results: programTeaser } = await db
   .prepare("SELECT nama, foto FROM program WHERE status = 1 ORDER BY urutan ASC, id ASC LIMIT 6")
   .all<ProgramTeaserRow>();
 
-function formatTanggal(iso: string): string {
-  return new Date(iso.replace(" ", "T") + "Z").toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
-}
 ---
 <Layout ogImage="/images/hero/beranda-hero.jpg">
   <section class="relative min-h-screen flex items-center px-6 pt-20 overflow-hidden">

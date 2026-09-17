@@ -1,6 +1,7 @@
 ---
 import AdminLayout from "../../../layouts/AdminLayout.astro";
 import { env } from "cloudflare:workers";
+import { formatTanggal } from '../../../lib/date';
 
 const admin = Astro.locals.admin;
 
@@ -28,9 +29,6 @@ const { results } = await db
   .bind(PER_PAGE, offset)
   .all<BeritaRow>();
 
-function formatTanggal(iso: string): string {
-  return new Date(iso.replace(" ", "T") + "Z").toLocaleDateString("id-ID", { dateStyle: "medium" });
-}
 ---
 
 <AdminLayout title="Kelola Berita — Yasuki" admin={admin}>

@@ -1,6 +1,7 @@
 ---
 import AdminLayout from "../../layouts/AdminLayout.astro";
 import { env } from "cloudflare:workers";
+import { formatTanggalWaktu } from '../../lib/date';
 
 const admin = Astro.locals.admin;
 const statusFilter = Astro.url.searchParams.get("status") || "semua";
@@ -54,9 +55,6 @@ const { results } = await db.prepare(query).bind(...bindings).all<DonasiRow>();
 
 function formatRupiah(n: number): string {
   return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(n);
-}
-function formatTanggal(iso: string): string {
-  return new Date(iso.replace(" ", "T") + "Z").toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" });
 }
 const statusBadgeClass: Record<string, string> = {
   pending: "bg-amber-100 text-amber-800",

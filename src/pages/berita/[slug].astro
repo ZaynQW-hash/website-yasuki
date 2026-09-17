@@ -4,6 +4,7 @@ import Breadcrumb from '../../components/Breadcrumb.astro';
 import ArtikelKonten from '../../components/ArtikelKonten.astro';
 import { env } from "cloudflare:workers";
 import { renderKontenBerita } from "../../lib/format-konten";
+import { formatTanggal } from "../../lib/date";
 
 const { slug } = Astro.params;
 
@@ -30,9 +31,6 @@ if (!berita || berita.published !== 1) {
   return Astro.redirect("/berita");
 }
 
-function formatTanggal(iso: string): string {
-  return new Date(iso.replace(" ", "T") + "Z").toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
-}
 
 const kontenHtml = renderKontenBerita(berita.konten);
 

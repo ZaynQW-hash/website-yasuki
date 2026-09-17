@@ -1,5 +1,6 @@
 import type { APIRoute } from "astro";
 import { env } from "cloudflare:workers";
+import { formatTanggalSitemap } from "../../lib/date";
 
 const SITE = "https://yasuki.site";
 
@@ -15,11 +16,7 @@ const halamanStatis = [
 
 function toLastmod(iso: string | null | undefined): string | null {
   if (!iso) return null;
-  try {
-    return new Date(iso.replace(" ", "T") + "Z").toISOString().split("T")[0];
-  } catch {
-    return null;
-  }
+  return formatTanggalSitemap(iso);
 }
 
 export const GET: APIRoute = async () => {

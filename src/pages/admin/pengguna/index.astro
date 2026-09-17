@@ -2,6 +2,7 @@
 import AdminLayout from "../../../layouts/AdminLayout.astro";
 import { env } from "cloudflare:workers";
 import { MODUL_ADMIN } from "../../../lib/modul-admin";
+import { formatTanggal } from '../../../lib/date';
 
 const admin = Astro.locals.admin;
 
@@ -24,9 +25,6 @@ const { results } = await db
   .prepare("SELECT id, nama, email, role, aktif, akses, created_at FROM admin_users ORDER BY created_at ASC")
   .all<AdminRow>();
 
-function formatTanggal(iso: string): string {
-  return new Date(iso.replace(" ", "T") + "Z").toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
-}
 
 function labelModul(key: string): string {
   return MODUL_ADMIN.find((m) => m.key === key)?.label || key;
