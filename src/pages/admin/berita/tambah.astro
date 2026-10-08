@@ -129,7 +129,25 @@ const admin = Astro.locals.admin;
 <style>
   #editor-konten :global(.ql-editor) {
     min-height: 260px;
-    font-size: 0.875rem;
+    font-size: 1rem;
+    line-height: 1.75;
+  }
+
+  /* Toolbar nempel di atas pas di-scroll, biar tombol sisip foto selalu keliatan
+     walaupun lagi ngetik di bagian bawah artikel yang panjang. */
+  #editor-wrapper :global(.ql-toolbar) {
+    position: sticky;
+    top: 56px;
+    z-index: 10;
+    background: white;
+    border-top-left-radius: 0.5rem;
+    border-top-right-radius: 0.5rem;
+  }
+
+  @media (min-width: 768px) {
+    #editor-wrapper :global(.ql-toolbar) {
+      top: 0;
+    }
   }
 </style>
 
@@ -271,7 +289,6 @@ const admin = Astro.locals.admin;
     e.preventDefault();
     errorMsg.classList.add("hidden");
 
-    // Kalau lagi di mode HTML pas submit, sinkronin dulu balik ke editor visual
     if (modeHtml) {
       keluarModeHtml();
     }
